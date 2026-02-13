@@ -1,10 +1,7 @@
 package ecommerce.com.srishakram.models;
 
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.context.annotation.Bean;
@@ -14,7 +11,7 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 public class Image {
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     Long id;
     String img1;
