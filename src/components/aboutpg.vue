@@ -575,6 +575,27 @@ h2 {
 }
 
 @media (max-width: 980px) {
+  .about-page {
+    background:
+      radial-gradient(circle at 12% 2%, rgba(217, 174, 102, 0.14), transparent 26%),
+      linear-gradient(180deg, #fff8ee 0%, #f5e7d3 100%);
+  }
+
+  .about-hero {
+    min-height: 76vh;
+    align-items: flex-end;
+  }
+
+  .hero-veiling {
+    background:
+      linear-gradient(180deg, rgba(41, 7, 7, 0.16), rgba(41, 7, 7, 0.72)),
+      linear-gradient(90deg, rgba(41, 7, 7, 0.68), rgba(41, 7, 7, 0.18));
+  }
+
+  .hero-content {
+    margin-top: 0 !important;
+  }
+
   .story-intro,
   .temple-panel,
   .journey-section,
@@ -592,6 +613,71 @@ h2 {
     min-height: 420px;
   }
 
+  .story-intro,
+  .temple-panel,
+  .craft-section,
+  .journey-section,
+  .atelier-section {
+    width: min(100% - 40px, 760px);
+  }
+
+  .story-intro {
+    padding: 76px 0 52px;
+    gap: 24px;
+  }
+
+  .temple-panel,
+  .craft-card,
+  .video-frame,
+  .atelier-card,
+  .journey-section {
+    border-radius: 22px;
+    box-shadow: 0 18px 42px rgba(72, 23, 12, 0.09);
+    overflow: hidden;
+  }
+
+  .values-band {
+    width: min(100% - 40px, 760px);
+    margin: 72px auto;
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 20px 44px rgba(45, 9, 9, 0.16);
+  }
+
+  .value-card {
+    min-height: auto;
+    padding: 34px 28px;
+    border-right: 0;
+    border-bottom: 1px solid rgba(217, 174, 102, 0.22);
+  }
+
+  .value-card h3 {
+    margin-top: 28px;
+  }
+
+  .craft-grid {
+    gap: 18px;
+  }
+
+  .craft-card {
+    min-height: auto;
+  }
+
+  .craft-card img {
+    min-height: 280px;
+    max-height: 340px;
+  }
+
+  .journey-section {
+    padding: 42px 28px;
+    background: rgba(255, 253, 248, 0.76);
+    border-color: rgba(118, 58, 28, 0.16);
+  }
+
+  .atelier-section {
+    gap: 22px;
+  }
+
   .gallery-strip {
     grid-template-columns: 1fr;
     height: auto;
@@ -603,6 +689,14 @@ h2 {
 }
 
 @media (max-width: 620px) {
+  .about-page {
+    overflow-x: hidden;
+  }
+
+  .about-hero {
+    min-height: 68vh;
+  }
+
   .hero-content,
   .story-intro,
   .temple-panel,
@@ -613,32 +707,98 @@ h2 {
   }
 
   .hero-content {
-    margin-bottom: 56px;
+    margin-bottom: 38px;
+    padding: 0 2px;
+  }
+
+  .hero-content h1 {
+    font-size: clamp(34px, 12vw, 48px);
+    line-height: 1.03;
   }
 
   .hero-content p:last-child {
     font-size: 15px;
+    line-height: 1.65;
+    margin-top: 16px;
   }
 
   .story-intro {
-    padding: 76px 0 54px;
+    padding: 58px 0 36px;
+  }
+
+  .story-intro h2,
+  .temple-copy h2,
+  .section-heading h2,
+  .journey-copy h2,
+  .atelier-card h2 {
+    font-size: clamp(28px, 9vw, 38px);
+    line-height: 1.1;
+  }
+
+  .story-intro > p,
+  .temple-copy p,
+  .craft-card span,
+  .journey-copy p,
+  .timeline-item span,
+  .atelier-card p {
+    font-size: 14px;
+    line-height: 1.75;
+  }
+
+  .temple-image {
+    min-height: 300px;
+    max-height: 360px;
+  }
+
+  .temple-copy,
+  .atelier-card {
+    padding: 28px 22px;
+  }
+
+  .vertical-mark {
+    display: none;
   }
 
   .values-band {
-    margin: 72px 0;
+    width: calc(100% - 32px);
+    margin: 52px auto;
+    border-radius: 20px;
   }
 
   .value-card {
-    min-height: 230px;
+    min-height: auto;
+    padding: 28px 22px;
+  }
+
+  .value-card h3 {
+    margin: 22px 0 10px;
+    font-size: 23px;
+  }
+
+  .value-card p {
+    margin-bottom: 0;
+    font-size: 14px;
   }
 
   .craft-section,
   .atelier-section {
-    padding-bottom: 72px;
+    padding-bottom: 56px;
+  }
+
+  .section-heading {
+    margin-bottom: 24px;
+  }
+
+  .craft-card div {
+    padding: 22px;
+  }
+
+  .craft-card img {
+    min-height: 240px;
   }
 
   .journey-section {
-    padding: 64px 0;
+    padding: 32px 22px;
   }
 
   .timeline-item {
@@ -647,7 +807,18 @@ h2 {
   }
 
   .video-frame {
-    min-height: 360px;
+    min-height: 320px;
+  }
+
+  .video-frame button,
+  .atelier-card button {
+    padding: 11px 15px;
+    font-size: 10px;
+  }
+
+  .video-frame button {
+    right: 16px;
+    bottom: 16px;
   }
 }
 </style>

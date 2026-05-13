@@ -33,6 +33,7 @@
 
 <script>
   import api from '@/adminfolder/axios';
+  import { showToast } from '@/utils/toast';
 export default {
   data() {
     return {
@@ -99,7 +100,9 @@ export default {
         colors: this.selectedColors,
         customerid: this.customerId
       }}).then((res)=>{
-         alert("saved successfully")
+         showToast("Color preferences saved successfully", "success")
+      }).catch(() => {
+         showToast("Something went wrong. Please try again.", "error")
       })
     }
   }

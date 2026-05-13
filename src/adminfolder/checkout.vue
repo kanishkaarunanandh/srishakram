@@ -274,6 +274,7 @@
 <script>
 import api from "@/adminfolder/axios";
 import { Country, State } from "country-state-city";
+import { showToast } from "@/utils/toast";
 
 export default {
   name: "CheckoutPage",
@@ -420,7 +421,7 @@ this.subtotal = this.cartItems.reduce(
     },
     payNow() {
   if (!this.cartItems.length) {
-    alert("Your cart is empty");
+    showToast("Your cart is empty", "warning");
     return;
   }
    const requiredFields = [
@@ -437,7 +438,7 @@ this.subtotal = this.cartItems.reduce(
 
   const emptyField = requiredFields.find(f => !f.value || f.value.toString().trim() === "");
   if (emptyField) {
-    alert(`Please fill the required field: ${emptyField.name}`);
+    showToast(`Please fill the required field: ${emptyField.name}`, "warning");
     return;
   }
   const payload = {
@@ -459,7 +460,7 @@ this.subtotal = this.cartItems.reduce(
     api
       .post("/create-order", payload)
       .then((res) => {
-        alert("Order placed successfully! Payment method: COD. Order ID: " + res.data.orderId);
+        showToast(`Order placed successfully. Order ID: ${res.data.orderId}`, "success");
         const isBuyNow = !!sessionStorage.getItem("buyNowItem");
         if (!isBuyNow) {
           api.delete("/cart/clear");
@@ -472,7 +473,7 @@ this.subtotal = this.cartItems.reduce(
       })
       .catch((err) => {
         console.error(err.response?.data);
-        alert("Please fill all required fields");
+        showToast("Please fill all required fields", "warning");
       });
   } else {
     // ✅ Razorpay: create order and open Razorpay modal
@@ -481,7 +482,7 @@ this.subtotal = this.cartItems.reduce(
       .then((res) => this.openRazorpay(res.data))
       .catch((err) => {
         console.error(err.response?.data);
-        alert("Please fill all required fields");
+        showToast("Please fill all required fields", "warning");
       });
   }
 },
@@ -510,7 +511,7 @@ this.subtotal = this.cartItems.reduce(
 
     modal: {
       ondismiss: async () => {
-        alert("Payment cancelled");
+        showToast("Payment cancelled", "info");
 
         // 🔥 CALL BACKEND TO MARK FAILED
         if (this.razorpayOrderId) {
@@ -536,7 +537,7 @@ await api.post("/handle-payment-callback", {
 
     if (res.data.success) {
 
-      alert("Payment Successful! Order ID: " + res.data.orderId);
+      showToast(`Payment successful. Order ID: ${res.data.orderId}`, "success");
 
       const isBuyNow = !!sessionStorage.getItem("buyNowItem");
 
@@ -562,7 +563,7 @@ await api.post("/handle-payment-callback", {
 
       }
 
-      alert("Payment failed");
+      showToast("Payment failed", "error");
     }
 
   } catch (err) {
@@ -572,7 +573,7 @@ await api.post("/handle-payment-callback", {
       await api.post(`/payment-failed/${this.razorpayOrderId}`);
     }
 
-    alert("Payment failed. Please try again.");
+    showToast("Payment failed. Please try again.", "error");
   }
 }
 

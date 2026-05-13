@@ -236,10 +236,10 @@
           </v-menu>
           <p class="mobile-title" @click="searchcategory('Pure Silk')">PURE SILKS</p>
           <p class="mobile-title" @click="searchcategory('Morning-Evening')">MORNING-EVENING</p>
-          <p class="mobile-title" @click="$router.push('/about')">ABOUT US</p>
-          <p class="mobile-title" @click="$router.push('/all_journal')">SAREE JOURNAL</p>
-          <p class="mobile-title" @click="$router.push('/coming-soon?type=customization')">CUSTOMIZATION</p>
-          <p class="mobile-title mobile-title--soon" @click="$router.push('/coming-soon?type=tussar-silks')">
+          <p class="mobile-title" @click="navigateMobile('/about')">ABOUT US</p>
+          <p class="mobile-title" @click="navigateMobile('/all_journal')">SAREE JOURNAL</p>
+          <p class="mobile-title" @click="navigateMobile('/coming-soon?type=customization')">CUSTOMIZATION</p>
+          <p class="mobile-title mobile-title--soon" @click="navigateMobile('/coming-soon?type=tussar-silks')">
             TUSSAR SILKS
             <span class="coming-soon-badge mobile-soon-badge">Coming Soon</span>
           </p>
@@ -258,6 +258,7 @@
 
 <script>
 import api from '@/adminfolder/axios';
+import { showToast } from '@/utils/toast';
 
 export default {
   data() {
@@ -347,13 +348,18 @@ export default {
       if (this.isLoggedIn) {
         this.logout();
       } else {
-        this.$router.push('/login/account');
+        this.navigateMobile('/login/account');
       }
     },
 
     goToCheckout() {
       sessionStorage.removeItem("buyNowItem");
-      this.$router.push("/checkout");
+      this.navigateMobile("/checkout");
+    },
+
+    navigateMobile(path) {
+      this.mobileMenu = false;
+      this.$router.push(path);
     },
 
     async fetchCategoryFilters() {
@@ -382,11 +388,12 @@ export default {
     goToProduct(id) {
       this.$router.push({ name: 'showproduct', params: { id } });
       this.searchOpen = false;
+      this.mobileMenu = false;
     },
 
     gotoOrders() {
-      if (!this.isLoggedIn) this.$router.push("/login/account");
-      else this.$router.push('/orderStatus');
+      if (!this.isLoggedIn) this.navigateMobile("/login/account");
+      else this.navigateMobile('/orderStatus');
     },
 
     logout() {
@@ -400,7 +407,7 @@ export default {
       if (res.data.length > 0) {
         this.$router.push({ name: 'showproduct', params: { id: res.data[0].id } });
       } else {
-        alert("No product found");
+        showToast("No product found", "warning");
       }
       this.searchOpen = false;
     },
@@ -427,6 +434,7 @@ export default {
     isAuthenticated() {
       const token = localStorage.getItem("token");
       if (!token) {
+        showToast("Please login to continue", "warning");
         this.$router.push("/login/account");
         return false;
       }
@@ -449,7 +457,7 @@ export default {
         item.quantity = res.data.quantity;
       } catch (err) {
         console.error("Failed to increase quantity", err);
-        alert("Failed to update quantity. Try reloading the cart.");
+        showToast("Failed to update quantity. Try again.", "error");
       }
     },
 
@@ -464,13 +472,14 @@ export default {
         }
       } catch (err) {
         console.error("Failed to decrease quantity", err);
-        alert("Failed to update quantity. Try reloading the cart.");
+        showToast("Failed to update quantity. Try again.", "error");
       }
     },
 
     async removeItem(item) {
       await api.delete(`/cart/${item.id}`);
       this.cartItems = this.cartItems.filter(i => i.id !== item.id);
+      showToast("Item removed from cart", "success");
     },
 
     formatPrice(price) {

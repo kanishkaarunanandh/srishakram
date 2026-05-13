@@ -22,6 +22,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     Saree_jornal: typeof import('./src/components/saree_jornal.vue')['default']
+    Toast: typeof import('./src/components/common/Toast.vue')['default']
     TrackStatus: typeof import('./src/components/TrackStatus.vue')['default']
     UserLogin: typeof import('./src/components/userLogin.vue')['default']
     Userregister: typeof import('./src/components/userregister.vue')['default']

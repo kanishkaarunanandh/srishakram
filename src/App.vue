@@ -7,6 +7,7 @@
     </v-main>
 
     <Footer v-if="route.meta.navbar === 'user'" />
+    <Toast />
   </v-app>
 </template>
 
@@ -16,6 +17,7 @@ import { startAutoLogout } from "@/utils/auth";
 import Navbar1 from "@/Common Files/Navbar1.vue";
 import Footer from "@/Common Files/Footer.vue";
 import Navbar2 from "./Common Files/Navbar2.vue";
+import Toast from "@/components/common/Toast.vue";
 const route = useRoute();
 
 const token = localStorage.getItem("token");

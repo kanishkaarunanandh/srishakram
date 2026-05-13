@@ -1,4 +1,11 @@
 <template>
+  <div class="journal-back-wrap">
+    <button class="journal-back-button" type="button" @click="goBackToJournal">
+      <span>←</span>
+      Back to Saree Journal
+    </button>
+  </div>
+
   <!-- HERO -->
   <div
     class="hero"
@@ -171,6 +178,14 @@ export default {
   },
   methods: {
     resolveMediaUrl,
+    goBackToJournal() {
+      if (window.history.length > 1) {
+        this.$router.back();
+        return;
+      }
+
+      this.$router.push('/all_journal');
+    },
     async fetchJournal(id) {
       try {
         const res = await api.get(
@@ -203,6 +218,39 @@ export default {
 /* Base styles */
 * {
   box-sizing: border-box;
+}
+
+.journal-back-wrap {
+  position: relative;
+  z-index: 3;
+  width: min(1200px, calc(100% - 48px));
+  margin: 0 auto -86px;
+  padding-top: 118px;
+}
+
+.journal-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(217, 174, 102, 0.58);
+  border-radius: 999px;
+  background: rgba(255, 250, 244, 0.92);
+  color: #5f0d10;
+  padding: 10px 18px;
+  box-shadow: 0 14px 30px rgba(45, 9, 9, 0.16);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  backdrop-filter: blur(12px);
+  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+
+.journal-back-button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(217, 174, 102, 0.9);
+  box-shadow: 0 18px 36px rgba(45, 9, 9, 0.2);
 }
 
 .divider {
@@ -551,6 +599,17 @@ h1 {
 /* ========== MOBILE RESPONSIVE STYLES ========== */
 
 @media (max-width: 768px) {
+  .journal-back-wrap {
+    width: calc(100% - 32px);
+    margin-bottom: -78px;
+    padding-top: 100px;
+  }
+
+  .journal-back-button {
+    padding: 9px 14px;
+    font-size: 10px;
+  }
+
   /* Hero Section */
   .hero {
     height: 85vh;

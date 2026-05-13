@@ -304,6 +304,7 @@
 <script>
 import { resolveMediaUrl } from '@/utils/mediaUrl'
 import api from "./axios.js";
+import { showToast } from '@/utils/toast';
 
 const createEmptyProduct = () => ({
     title: "",
@@ -539,6 +540,7 @@ export default {
         addToCart() {
             const token = localStorage.getItem("token");
             if (!token) {
+                showToast("Please login to continue", "warning");
                 this.$router.push("/login/account");
                 return;
             }
@@ -554,15 +556,17 @@ export default {
                 }
             })
             .then(() => {
-                alert("Item added to cart");
+                showToast("Product added to cart", "success");
             })
             .catch(err => {
                 console.error("Cart save failed", err);
+                showToast("Something went wrong. Please try again.", "error");
             });
         },
         buyNow() {
             const token = localStorage.getItem("token");
             if (!token) {
+                showToast("Please login to continue", "warning");
                 this.$router.push("/login/account");
                 return;
             }

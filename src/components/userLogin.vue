@@ -56,6 +56,7 @@
 <script>
 import api from "@/adminfolder/axios";
 import { startAutoLogout } from "@/utils/auth";
+import { showToast } from "@/utils/toast";
 
 const backendOrigin = import.meta.env.VITE_BACKEND_URL || "https://srishakram-backend-v2.onrender.com";
 
@@ -92,6 +93,7 @@ export default {
         localStorage.setItem("customerId", customerId);
 
         startAutoLogout(token);
+        showToast("Login successful", "success");
 
         if (role === "ROLE_USER") {
           this.$router.replace("/");
@@ -101,6 +103,7 @@ export default {
       })
       .catch(() => {
         this.error = "Login failed. Please check your credentials.";
+        showToast("Login failed. Please check your credentials.", "error");
       });
     },
     goToRegister() {

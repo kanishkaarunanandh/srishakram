@@ -57,6 +57,7 @@
 </template>
 <script>
 import api from '@/adminfolder/axios.js';
+import { showToast } from '@/utils/toast';
 
 export default {
   data() {
@@ -85,16 +86,19 @@ export default {
 
       if (!this.email) {
         this.error = "Email is required";
+        showToast("Email is required", "warning");
         return;
       }
 
       if (!this.password) {
         this.error = "Password is required";
+        showToast("Password is required", "warning");
         return;
       }
 
       if (this.password !== this.confirm_password) {
         this.error = "Passwords do not match";
+        showToast("Passwords do not match", "warning");
         return;
       }
 
@@ -103,10 +107,12 @@ export default {
         password: this.password,
       })
       .then(() => {
+        showToast("Registration successful. Please sign in.", "success");
         this.$router.push("/login/account");
       })
       .catch(err => {
         this.error = err.response?.data?.message || "Registration failed";
+        showToast(this.error, "error");
       });
     },
 
