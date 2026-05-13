@@ -1,0 +1,12 @@
+
+* {
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  caret-color: transparent;
+}
+
+input, textarea {
+  caret-color: auto;
+}
