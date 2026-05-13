@@ -686,6 +686,8 @@ export default {
   max-width: 1670px;
   padding: 20px 75px;
   box-sizing: border-box;
+  background: #fffaf4;
+  color: #2b1511;
 }
 
 /* ================= FILTERS ================= */
@@ -884,18 +886,20 @@ export default {
   max-width: 900px;
   margin: 90px auto 40px;
   text-align: center;
+  background: #fffaf4;
 }
 
 .description-title {
   font-weight: bold;
   font-size: 14px;
   margin-bottom: 16px;
+  color: #3a1511;
 }
 
 .description-text {
   font-size: 12px;
   line-height: 1.6;
-  color: #333;
+  color: #4b2b24;
 }
 
 /* ================= WEDDING BANNER ================= */
@@ -939,6 +943,8 @@ export default {
   .collection-container {
     max-width: 100%;
     padding: 18px 18px 34px;
+    background: #fffaf4;
+    color: #2b1511;
   }
 
   /* Show mobile filter button, hide desktop filters */

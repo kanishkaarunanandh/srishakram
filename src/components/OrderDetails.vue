@@ -5,7 +5,7 @@
         <!-- Back Button -->
         <v-btn
           text
-          class="mb-4 text-caption"
+          class="order-back-button mb-4"
           @click="$router.push('/orderStatus')"
         >
           <v-icon small left>mdi-arrow-left</v-icon>
@@ -602,6 +602,34 @@ export default {
     height: 100px;
     min-width: 100px;
     margin-right: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .order-details-container {
+    padding: 118px 16px 28px !important;
+    overflow-x: hidden;
+  }
+
+  .order-back-button {
+    min-height: 42px;
+    padding: 0 18px !important;
+    border: 1px solid rgba(196, 151, 80, 0.5);
+    border-radius: 999px;
+    background: rgba(255, 250, 242, 0.96) !important;
+    color: #6b1114 !important;
+    box-shadow: 0 12px 28px rgba(61, 16, 13, 0.12);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .order-header,
+  .products-section,
+  .summary-card {
+    border-radius: 18px;
+    box-shadow: 0 12px 32px rgba(61, 16, 13, 0.08);
   }
 }
 </style>

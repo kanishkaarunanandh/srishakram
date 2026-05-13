@@ -601,19 +601,20 @@ h1 {
 @media (max-width: 768px) {
   .journal-back-wrap {
     width: calc(100% - 32px);
-    margin-bottom: -78px;
-    padding-top: 100px;
+    margin-bottom: -58px;
+    padding-top: 18px;
   }
 
   .journal-back-button {
-    padding: 9px 14px;
+    padding: 10px 15px;
     font-size: 10px;
+    box-shadow: 0 10px 24px rgba(45, 9, 9, 0.16);
   }
 
   /* Hero Section */
   .hero {
-    height: 85vh;
-    min-height: 550px;
+    height: 82vh;
+    min-height: 520px;
     background-position: center center;
     background-size: cover;
     display: flex;

@@ -1188,6 +1188,44 @@ export default {
     .quantity-wrapper {
         margin-bottom: 16px;
     }
+
+    .quantity-box {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 150px;
+        height: 44px;
+        border: 1px solid rgba(194, 148, 78, 0.52);
+        background: rgba(255, 252, 247, 0.94);
+        box-shadow: 0 10px 24px rgba(72, 23, 12, 0.08);
+    }
+
+    .qty-btn,
+    .qty-value {
+        flex: 1 1 0;
+        min-width: 0;
+        width: auto;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        line-height: 1;
+    }
+
+    .qty-btn {
+        color: #3a1511;
+        font-size: 20px;
+        font-weight: 500;
+    }
+
+    .qty-value {
+        color: #34110e;
+        font-size: 17px;
+        font-weight: 500;
+        border-left: 1px solid rgba(194, 148, 78, 0.18);
+        border-right: 1px solid rgba(194, 148, 78, 0.18);
+    }
     
     .info-icons {
         margin-top: 16px;

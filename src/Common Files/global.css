@@ -3,10 +3,53 @@
   font-family: 'Poppins', sans-serif;
 }
 
+*,
+*::before,
+*::after {
+  color-scheme: light;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body,
+#app,
+.v-application,
+.v-theme--light,
+.v-theme--dark {
+  background: #fffaf4 !important;
+  color: #2b1511 !important;
+}
+
 body {
   caret-color: transparent;
 }
 
 input, textarea {
   caret-color: auto;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: light;
+  }
+
+  html,
+  body,
+  #app,
+  .v-application,
+  .v-theme--light,
+  .v-theme--dark {
+    background: #fffaf4 !important;
+    color: #2b1511 !important;
+  }
+
+  input,
+  textarea,
+  select,
+  button {
+    color-scheme: light;
+  }
 }
