@@ -15,15 +15,14 @@
 
 html,
 body,
-#app,
-.v-application,
-.v-theme--light,
-.v-theme--dark {
-  background: #fffaf4 !important;
-  color: #2b1511 !important;
+#app {
+  background-color: #fffaf4;
+  color: #2b1511;
 }
 
 body {
+  margin: 0;
+  min-width: 320px;
   caret-color: transparent;
 }
 
@@ -38,12 +37,9 @@ input, textarea {
 
   html,
   body,
-  #app,
-  .v-application,
-  .v-theme--light,
-  .v-theme--dark {
-    background: #fffaf4 !important;
-    color: #2b1511 !important;
+  #app {
+    background-color: #fffaf4;
+    color: #2b1511;
   }
 
   input,
