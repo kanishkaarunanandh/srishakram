@@ -122,7 +122,7 @@
         <div class="experience-item-content">
           <h3>Heritage Meets Modernity</h3>
           <p>
-            Tradition woven into contemporary design — available in Kanchipuram, Bangalore, or delivered worldwide.
+            Tradition woven into contemporary design — available in Kanchipuram, or delivered worldwide.
           </p>
         </div>
       </div>
@@ -210,7 +210,7 @@
         <p>Visit our store in</p>
         <h2>Kanchipuram</h2>
         <p>
-          Kotrampalayam St,<br />
+          No 45/18 Kotrampalayam St,<br />
           Kanchipuram, Tamil Nadu 631501
         </p>
         <v-btn class="direction-btn" @click="openGoogleMaps">Get Direction</v-btn>

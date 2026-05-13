@@ -28,7 +28,7 @@
         <div class="footer-column">
           <h4>Visit</h4>
           <p>
-            Kotrampalayam St,<br />
+            No 45/18 Kotrampalayam St,<br />
             Kanchipuram, Tamil Nadu 631501
           </p>
         </div>
@@ -300,8 +300,28 @@ export default {
     padding-top: 60px;
   }
 
-  .newsletter-panel {
-    padding: 20px;
+    .newsletter-panel {
+    padding: 16px;
+  }
+
+  .newsletter-form {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    gap: 6px;
+  }
+
+  .newsletter-form input {
+    width: 70%;
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+
+  .newsletter-form button {
+    width: 30%;
+    min-width: 70px;
+    font-size: 11px;
+    padding: 10px 8px;
   }
 
   .footer-bottom {

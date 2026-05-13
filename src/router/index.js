@@ -223,10 +223,15 @@ const routes = [
     meta: { navbar: "admin" }
   },
   {
-    path: '/modify-journal',  
+    path: '/modify-journal',
     name: 'modify-journal',
     component: JournalAdmin,
     meta: { navbar: "admin" }
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    redirect: '/'
   },
 
 
@@ -234,7 +239,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes,
 
   scrollBehavior(to, from, savedPosition) {
