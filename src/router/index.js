@@ -29,9 +29,9 @@ import CategoryAdmin from '@/adminfolder/CategoryAdmin.vue'
 import JournalAdmin from '@/adminfolder/JournalAdmin.vue'
 
 const SITE_URL = 'https://srishakram-frontend-v2.vercel.app'
-const DEFAULT_TITLE = 'Sri Shakram Silks | Luxury Kanchipuram Silk Sarees'
-const DEFAULT_DESCRIPTION = 'Sri Shakram offers luxury Kanchipuram silk sarees with traditional elegance and modern design.'
-const DEFAULT_KEYWORDS = 'Sri Shakram, Sri Shakram Silks, Kanchipuram silk sarees, luxury silk sarees, traditional silk sarees, bridal silk sarees'
+const DEFAULT_TITLE = 'Sri Shakram | Kanchipuram Silk Sarees'
+const DEFAULT_DESCRIPTION = 'Sri Shakram Silks offers Kanchipuram silk sarees, traditional silk sarees, pure silk sarees, bridal sarees, and zari collections crafted for timeless South Indian elegance.'
+const DEFAULT_KEYWORDS = 'Sri Shakram, Sri Shakram Silks, Sri Chakram Saree, Kanchipuram Silk Sarees, Traditional Silk Sarees, Pure Silk Sarees, bridal silk sarees, luxury silk sarees'
 
 function setMetaTag(selector, attribute, value) {
   let element = document.head.querySelector(selector)
@@ -86,7 +86,7 @@ const routes = [
     meta: {
       navbar: "user",
       title: DEFAULT_TITLE,
-      description: 'Luxury Kanchipuram Silk Sarees with traditional elegance and modern design. Explore Sri Shakram Silks for premium silk sarees and timeless South Indian craftsmanship.',
+      description: DEFAULT_DESCRIPTION,
       keywords: DEFAULT_KEYWORDS
     }
   },
@@ -102,9 +102,9 @@ const routes = [
     component: About,
     meta: {
       navbar: "user",
-      title: 'About Sri Shakram Silks | Kanchipuram Silk Heritage',
+      title: 'About Sri Shakram Silks',
       description: 'Learn about Sri Shakram Silks, a luxury silk saree brand rooted in Kanchipuram tradition, South Indian heritage, zari detail, and modern boutique elegance.',
-      keywords: 'About Sri Shakram, Sri Shakram Silks, Kanchipuram silk heritage, Tamil silk sarees, traditional saree brand'
+      keywords: 'About Sri Shakram, Sri Shakram Silks, Sri Chakram Saree, Kanchipuram silk heritage, Tamil silk sarees, traditional saree brand'
     }
   },
   
@@ -211,10 +211,9 @@ const routes = [
   props: true,
     meta: {
       navbar: "user",
-      title: 'Luxury Silk Saree | Sri Shakram Silks',
+      title: 'Silk Saree | Sri Shakram',
       description: 'View premium Sri Shakram silk sarees with traditional Kanchipuram elegance, rich colors, zari detail, and modern luxury styling.',
-      keywords: 'Sri Shakram silk saree, Kanchipuram silk saree, luxury saree, traditional silk saree, bridal saree',
-      canonicalPath: '/collections'
+      keywords: 'Sri Shakram silk saree, Sri Chakram Saree, Kanchipuram silk saree, luxury saree, traditional silk saree, bridal saree'
     }
 },
  {
@@ -224,9 +223,9 @@ const routes = [
     props: true,
       meta: {
         navbar: "user",
-        title: 'Kanchipuram Silk Saree Collections | Sri Shakram Silks',
+        title: 'Sri Shakram Silk Saree Collections',
         description: 'Shop Sri Shakram Silks collections featuring luxury Kanchipuram silk sarees, pure silk sarees, traditional silk sarees, bridal sarees, and elegant zari designs.',
-        keywords: 'Sri Shakram collections, Kanchipuram silk sarees, luxury silk sarees, pure silk sarees, traditional silk sarees'
+        keywords: 'Sri Shakram collections, Sri Chakram Saree, Kanchipuram silk sarees, luxury silk sarees, pure silk sarees, traditional silk sarees'
       }
   },
 {
@@ -265,7 +264,12 @@ const routes = [
   path: '/catelog',
   name: 'catelog',
   component: Catelog,
-  meta: { navbar: "user" }
+  meta: {
+    navbar: "user",
+    title: 'Sri Shakram Silk Saree Collections',
+    description: 'Browse Sri Shakram Silks catalog for Kanchipuram silk sarees, traditional silk sarees, pure silk sarees, and bridal saree collections.',
+    keywords: 'Sri Shakram catalog, Sri Chakram Saree, Kanchipuram Silk Sarees, Traditional Silk Sarees, Pure Silk Sarees'
+  }
 },
 {
     path: '/add/catelog',  
@@ -278,7 +282,7 @@ const routes = [
   name: 'SareeJournal',
   component: () => import('@/components/saree_jornal.vue'),
   meta: {
-    title: 'Saree Journal | Sri Shakram Silks',
+    title: 'Saree Journal | Sri Shakram',
     description: 'Read Sri Shakram saree stories about Kanchipuram silk, zari craftsmanship, traditional elegance, and South Indian fashion culture.',
     keywords: 'Sri Shakram saree journal, Kanchipuram silk stories, saree craftsmanship, zari work'
   }
@@ -295,7 +299,7 @@ const routes = [
   component: all_journal,
   meta: {
     navbar: "user",
-    title: 'Saree Journal | Sri Shakram Silks',
+    title: 'Saree Journal | Sri Shakram',
     description: 'Explore Sri Shakram Silks stories on Kanchipuram silk sarees, handloom-inspired craft, traditional silk elegance, and modern ethnic fashion.',
     keywords: 'Sri Shakram journal, saree journal, Kanchipuram silk sarees, traditional silk sarees'
   }

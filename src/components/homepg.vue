@@ -85,7 +85,8 @@
     <div class="experience-intro">
       <h2>Elevate Your Silk Experience</h2>
       <p>
-        At Sri Shakram, every saree tells a story — from the finest Kanchipuram silks to delicate zari details.  
+        At Sri Shakram Silks, every saree tells a story — from Sri Chakram saree searches to the finest
+        Kanchipuram silk sarees, traditional silk sarees, pure silk sarees, and delicate zari details.
         Discover elegance that’s timeless, curated for the modern connoisseur.
       </p>
     </div>

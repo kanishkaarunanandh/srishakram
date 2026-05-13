@@ -327,6 +327,8 @@ const createEmptyProduct = () => ({
     returnPolicy: "",
 });
 
+const SITE_URL = "https://srishakram-frontend-v2.vercel.app";
+
 export default {
     name: "ProductDetails",
     props: {
@@ -446,6 +448,77 @@ export default {
                 img.onerror = resolve;
                 img.src = imageUrl;
             });
+        },
+        setMetaTag(selector, attribute, value) {
+            let element = document.head.querySelector(selector);
+
+            if (!element) {
+                element = document.createElement("meta");
+                const match = selector.match(/\[(name|property)="([^"]+)"\]/);
+                if (match) element.setAttribute(match[1], match[2]);
+                document.head.appendChild(element);
+            }
+
+            element.setAttribute(attribute, value);
+        },
+        setProductCanonical(productId) {
+            let canonical = document.head.querySelector('link[rel="canonical"]');
+
+            if (!canonical) {
+                canonical = document.createElement("link");
+                canonical.setAttribute("rel", "canonical");
+                document.head.appendChild(canonical);
+            }
+
+            canonical.setAttribute("href", `${SITE_URL}/product/${productId}`);
+        },
+        updateProductSeo(product, productId) {
+            const productName = product.title || "Silk Saree";
+            const title = `${productName} | Sri Shakram`;
+            const description = `${productName} from Sri Shakram Silks. Explore Kanchipuram silk sarees, traditional silk sarees, pure silk sarees, bridal sarees, and zari collections.`;
+            const imageUrl = this.getImageUrl(product.img) || `${SITE_URL}/logo.png`;
+            const productUrl = `${SITE_URL}/product/${productId}`;
+
+            document.title = title;
+            this.setMetaTag('meta[name="description"]', "content", description);
+            this.setMetaTag('meta[name="keywords"]', "content", `${productName}, Sri Shakram, Sri Shakram Silks, Sri Chakram Saree, Kanchipuram Silk Sarees, Traditional Silk Sarees, Pure Silk Sarees`);
+            this.setMetaTag('meta[property="og:title"]', "content", title);
+            this.setMetaTag('meta[property="og:description"]', "content", description);
+            this.setMetaTag('meta[property="og:url"]', "content", productUrl);
+            this.setMetaTag('meta[property="og:image"]', "content", imageUrl);
+            this.setMetaTag('meta[name="twitter:title"]', "content", title);
+            this.setMetaTag('meta[name="twitter:description"]', "content", description);
+            this.setMetaTag('meta[name="twitter:image"]', "content", imageUrl);
+            this.setProductCanonical(productId);
+
+            const existingSchema = document.getElementById("product-json-ld");
+            if (existingSchema) {
+                existingSchema.remove();
+            }
+
+            const schema = document.createElement("script");
+            schema.id = "product-json-ld";
+            schema.type = "application/ld+json";
+            schema.textContent = JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "Product",
+                name: productName,
+                image: imageUrl,
+                description,
+                brand: {
+                    "@type": "Brand",
+                    name: "Sri Shakram Silks"
+                },
+                category: product.category || "Kanchipuram Silk Sarees",
+                offers: {
+                    "@type": "Offer",
+                    priceCurrency: "INR",
+                    price: product.price || undefined,
+                    availability: "https://schema.org/InStock",
+                    url: productUrl
+                }
+            });
+            document.head.appendChild(schema);
         },
         scrollToProductTop(behavior = "smooth") {
             window.scrollTo({ top: 0, behavior });
@@ -601,6 +674,7 @@ export default {
                 // Save to recently viewed
                 this.addToRecentlyViewed(productId);
                 this.fetchRecentlyViewed();
+                this.updateProductSeo(nextProduct, productId);
             } catch (err) {
                 if (err.name === "CanceledError" || err.code === "ERR_CANCELED") {
                     return;
