@@ -57,6 +57,8 @@
 import api from "@/adminfolder/axios";
 import { startAutoLogout } from "@/utils/auth";
 
+const backendOrigin = import.meta.env.VITE_BACKEND_URL || "https://srishakram-backend-v2.onrender.com";
+
 export default {
   data() {
     return {
@@ -68,7 +70,7 @@ export default {
   },
   methods: {
     loginWithGoogle() {
-      window.location.href = "https://srishakram-backend-v2.onrender.com/oauth2/authorization/google";
+      window.location.href = `${backendOrigin}/oauth2/authorization/google`;
     },
     login() {
       localStorage.clear();

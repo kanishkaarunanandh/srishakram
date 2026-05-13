@@ -1,11 +1,17 @@
 <template>
-    <v-container :style="containerStyle">
+    <v-container class="product-details-page" :style="containerStyle">
         <v-row>
             <!-- Left: Images -->
             <v-col cols="12" md="7">
                 <!-- Main Image -->
-                <div class="main-image-wrapper">
+                <div class="main-image-wrapper product-main-image">
+  <div
+    v-if="loadingProduct"
+    class="main-image-skeleton skeleton-block"
+    :style="{ height: `${mainImageHeight}px` }"
+  ></div>
   <v-img
+    v-else
     :src="getImageUrl(selectedImage || product.img)"
     :height="mainImageHeight"
     cover
@@ -15,12 +21,20 @@
 
 
                 <!-- Thumbnails -->
-                <div class="thumbnail-wrapper">
+                <div v-if="loadingProduct" class="thumbnail-wrapper">
+                    <div
+                        v-for="index in 4"
+                        :key="`thumb-skeleton-${index}`"
+                        class="thumbnail-skeleton skeleton-block"
+                        :style="{ height: `${thumbnailSize}px`, width: `${thumbnailSize}px` }"
+                    ></div>
+                </div>
+                <div v-else class="thumbnail-wrapper">
                     <div 
                         v-for="(img, index) in product.images" 
                         :key="index" 
                         class="thumbnail-container"
-                        @click="selectedImage = img"
+                        @click="setSelectedImage(img)"
                     >
                         <v-img 
                             :src="getImageUrl(img)"
@@ -36,6 +50,12 @@
             <!-- Right: Product Info -->
             <v-col cols="12" md="5" >
                 <div class="mb-3 product-info-wrapper">
+                    <div v-if="loadingProduct" class="product-loading-info">
+                        <div class="skeleton-line skeleton-line-small"></div>
+                        <div class="skeleton-line skeleton-title"></div>
+                        <div class="skeleton-line skeleton-price"></div>
+                    </div>
+                    <template v-else>
                     <div class="text-subtitle-1 mb-1 breadcrumb-mobile">
                         <a href="/" style="text-decoration: none; color: black; font-size: 12px;">Home</a>/ <a href="/catelog"
                             style="text-decoration: none; color: black;font-size: 12px;">Collection</a>/ <a
@@ -51,6 +71,7 @@
                     <div class="text-caption mb-5">
                         Shipping calculated at checkout.
                     </div>
+                    </template>
                     <!-- Quantity -->
                     <div class="quantity-wrapper">
                         <div class="quantity-label">QUANTITY</div>
@@ -67,13 +88,14 @@
 
                 <!-- Buttons -->
                 <div class="d-flex flex-column mb-4 buttons-wrapper">
-                    <v-btn variant="outlined" color="black" class="mb-4" @click="addToCart">
+                    <v-btn variant="outlined" color="black" class="mb-4" :disabled="loadingProduct || !product.title" @click="addToCart">
                         Add To Cart
                     </v-btn>
-                    <v-btn color="black" dark class="text-uppercase" @click="buyNow">
+                    <v-btn color="black" dark class="text-uppercase" :disabled="loadingProduct || !product.title" @click="buyNow">
                         Buy It Now
                     </v-btn>
                 </div>
+                <p v-if="productError" class="product-error">{{ productError }}</p>
                 <p class="discount-text">Shop Above Rs:30,000 and get 10% Discount</p>
                 <!-- Features -->
                 <div>
@@ -239,7 +261,7 @@
             </p>
 
             <div class="recommendation-grid">
-                <div v-for="product in products.slice(0, 5)" :key="product.id" class="recommendation-card" @click="$router.push(`/product/${product.id}`)">
+                <div v-for="product in products.slice(0, 5)" :key="product.id" class="recommendation-card" @click="goToProduct(product.id)">
                     <img :src="getImageUrl(product.img)" class="recommendation-img" />
                     <p class="recommendation-product-title">{{ product.title }}</p>
                     <p class="recommendation-product-price">Rs {{ product.price }}</p>
@@ -264,7 +286,7 @@
                     v-for="item in recentProducts"
                     :key="item.id"
                     class="recommendation-card"
-                    @click="$router.push(`/product/${item.id}`)"
+                    @click="goToProduct(item.id)"
                 >
                     <v-img
                         :src="item.img"
@@ -283,6 +305,28 @@
 import { resolveMediaUrl } from '@/utils/mediaUrl'
 import api from "./axios.js";
 
+const createEmptyProduct = () => ({
+    title: "",
+    img: "",
+    images: [],
+    category: "",
+    price: 0,
+    blouselength: "",
+    sareelength: "",
+    color: "",
+    weight: "",
+    features: {
+        length: 0,
+        blouselength: 0,
+        color: "",
+        weight: 0,
+        sareelength: 0,
+    },
+    description: "",
+    shippingInfo: "",
+    returnPolicy: "",
+});
+
 export default {
     name: "ProductDetails",
     props: {
@@ -293,29 +337,18 @@ export default {
     },
     data() {
         return {
-            product: {
-                title: "",
-                img: "",
-                images: [],
-                category: "",
-                price: 0,
-                features: {
-                    length: 0,
-                    blouselength: 0,
-                    color: "",
-                    weight: 0,
-                    sareelength: 0,
-                },
-                description: "",
-                shippingInfo: "",
-                returnPolicy: "",
-            },
+            product: createEmptyProduct(),
+            loadingProduct: false,
+            productError: "",
             selectedImage: null,
             quantity: 1,
             recentProducts: [],
             products: [],
-             isBlurred: false,
-    blurTimer: null
+            isBlurred: false,
+            blurTimer: null,
+            loadingProductId: null,
+            productRequestController: null,
+            productRequestKey: 0
 
         };
     },
@@ -330,20 +363,32 @@ export default {
         },
         thumbnailSize() {
             return this.$vuetify.display.mobile ? 80 : 100;
+        },
+        currentProductId() {
+            return String(this.$route.params.id || this.id || "");
         }
     },
     watch: {
-        '$route.params.id'(newId, oldId) {
-            this.loadProduct(newId);
+        '$route.params.id': {
+            immediate: true,
+            handler(newId) {
+                this.loadProduct(newId);
+            }
         },
-        selectedImage() {
-    this.startBlurTimer();
-  }
+        selectedImage(newImage) {
+            if (this.loadingProduct) {
+                return;
+            }
+
+            if (!this.loadingProduct && newImage) {
+                this.preloadImage(newImage);
+            }
+            this.startBlurTimer();
+        }
     },
     beforeUnmount() {
-  if (this.blurTimer) {
-    clearTimeout(this.blurTimer);
-  }
+        this.clearBlurTimer();
+        this.productRequestController?.abort();
 },
     methods: {
             getImageUrl(path) {
@@ -358,6 +403,24 @@ export default {
                     console.log(error)
                 })
         },
+        clearBlurTimer() {
+            if (this.blurTimer) {
+                clearTimeout(this.blurTimer);
+                this.blurTimer = null;
+            }
+            this.isBlurred = false;
+        },
+        resetProductState() {
+            this.clearBlurTimer();
+            this.selectedImage = null;
+            this.quantity = 1;
+            this.product = createEmptyProduct();
+            this.productError = "";
+        },
+        setSelectedImage(img) {
+            if (this.loadingProduct) return;
+            this.selectedImage = img;
+        },
         startBlurTimer() {
   // Clear old timer
   if (this.blurTimer) {
@@ -370,6 +433,35 @@ export default {
     this.isBlurred = true;
   }, 60000); 
 },
+        preloadImage(path) {
+            const imageUrl = this.getImageUrl(path);
+
+            if (!imageUrl) {
+                return Promise.resolve();
+            }
+
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = resolve;
+                img.onerror = resolve;
+                img.src = imageUrl;
+            });
+        },
+        scrollToProductTop(behavior = "smooth") {
+            window.scrollTo({ top: 0, behavior });
+        },
+        goToProduct(productId) {
+            const nextId = String(productId);
+
+            if (!nextId || nextId === this.currentProductId) {
+                return;
+            }
+
+            this.resetProductState();
+            this.loadingProduct = true;
+            this.scrollToProductTop();
+            this.$router.push(`/product/${nextId}`);
+        },
 
         addToCart() {
             const token = localStorage.getItem("token");
@@ -379,7 +471,7 @@ export default {
             }
 
             const cartItem = {
-                productId: this.id,
+                productId: this.currentProductId,
                 quantity: this.quantity
             };
 
@@ -402,7 +494,7 @@ export default {
                 return;
             }
             const buyNowItem = {
-                productId: this.id,
+                productId: this.currentProductId,
                 productName: this.product.title,
                 price: this.product.price,
                 quantity: this.quantity,
@@ -427,7 +519,7 @@ export default {
             let viewed = JSON.parse(localStorage.getItem("recentlyViewed")) || [];
 
             // Remove duplicate
-            viewed = viewed.filter(id => id !== productId);
+            viewed = viewed.filter(id => String(id) !== String(productId));
 
             // Add to front
             viewed.unshift(productId);
@@ -443,34 +535,90 @@ export default {
             const viewed = JSON.parse(localStorage.getItem("recentlyViewed")) || [];
 
             // Remove current product
-            const filtered = viewed.filter(id => id !== this.id);
+            const filtered = viewed.filter(id => String(id) !== this.currentProductId);
+
+            if (!filtered.length) {
+                this.recentProducts = [];
+                return;
+            }
 
             Promise.all(
                 filtered.map(id => api.get(`/upload/products/${id}`))
             ).then(responses => {
                 this.recentProducts = responses.map(r => r.data);
+            }).catch((err) => {
+                console.error("Recent products load failed:", err);
             });
         },
-        loadProduct(id) {
-            this.startBlurTimer();
-            api
-                .get(`/upload/products/${id}`)
-                .then((res) => {
-                    Object.assign(this.product, res.data);
-                    this.selectedImage = null;
-                    this.quantity = 1;
+        async loadProduct(id) {
+            const productId = String(id || "");
 
-                    // Save to recently viewed
-                    this.addToRecentlyViewed(id);
-                    this.fetchRecentlyViewed();
-                })
-                .catch((err) => {
-                    console.error("Error fetching product:", err);
+            if (!productId) {
+                this.resetProductState();
+                this.productError = "Product not found.";
+                return;
+            }
+
+            if (this.loadingProduct && this.loadingProductId === productId) {
+                return;
+            }
+
+            this.productRequestController?.abort();
+            const requestController = new AbortController();
+            const requestKey = this.productRequestKey + 1;
+            this.productRequestController = requestController;
+            this.productRequestKey = requestKey;
+            this.loadingProductId = productId;
+            this.loadingProduct = true;
+            this.resetProductState();
+
+            try {
+                const res = await api.get(`/upload/products/${productId}`, {
+                    signal: requestController.signal,
                 });
+
+                if (requestKey !== this.productRequestKey) {
+                    return;
+                }
+
+                const nextProduct = {
+                    ...createEmptyProduct(),
+                    ...res.data,
+                    images: Array.isArray(res.data?.images) ? res.data.images : [],
+                };
+
+                await this.preloadImage(nextProduct.img);
+
+                if (requestKey !== this.productRequestKey) {
+                    return;
+                }
+
+                this.product = nextProduct;
+                this.selectedImage = null;
+                this.quantity = 1;
+                this.startBlurTimer();
+
+                // Save to recently viewed
+                this.addToRecentlyViewed(productId);
+                this.fetchRecentlyViewed();
+            } catch (err) {
+                if (err.name === "CanceledError" || err.code === "ERR_CANCELED") {
+                    return;
+                }
+
+                console.error("Error fetching product:", err);
+                this.productError = "Unable to load this product. Please try again.";
+                this.product = createEmptyProduct();
+            } finally {
+                if (requestKey === this.productRequestKey) {
+                    this.loadingProduct = false;
+                    this.loadingProductId = null;
+                    this.productRequestController = null;
+                }
+            }
         }
     },
     mounted() {
-        this.loadProduct(this.id);
         this.getProducts();
     },
 
@@ -478,15 +626,80 @@ export default {
 </script>
 
 <style>
+.product-details-page {
+  position: relative;
+  box-sizing: border-box;
+}
+
 .main-image-wrapper {
   position: relative;
   overflow: hidden;
   border-radius: 4px;
+  max-width: 100%;
 }
 
 .blurred {
   filter: blur(8px);
   transition: filter 0.5s ease;
+}
+
+.skeleton-block,
+.skeleton-line {
+    background: linear-gradient(90deg, #f1eeee 25%, #faf8f6 40%, #f1eeee 65%);
+    background-size: 220% 100%;
+    animation: product-skeleton-loading 1.2s ease-in-out infinite;
+}
+
+.main-image-skeleton {
+    width: 100%;
+    border-radius: inherit;
+}
+
+.thumbnail-skeleton {
+    flex-shrink: 0;
+    border-radius: 4px;
+}
+
+.product-loading-info {
+    padding-top: 2px;
+}
+
+.skeleton-line {
+    border-radius: 999px;
+    height: 14px;
+    margin-bottom: 14px;
+}
+
+.skeleton-line-small {
+    width: 48%;
+    height: 12px;
+}
+
+.skeleton-title {
+    width: 86%;
+    height: 42px;
+    border-radius: 6px;
+}
+
+.skeleton-price {
+    width: 54%;
+    height: 18px;
+}
+
+.product-error {
+    color: #8a1f12;
+    font-size: 13px;
+    margin: 8px 0 0;
+}
+
+@keyframes product-skeleton-loading {
+    0% {
+        background-position: 100% 0;
+    }
+
+    100% {
+        background-position: -100% 0;
+    }
 }
 
 .quantity-label {
@@ -665,6 +878,10 @@ export default {
         max-width: 100% !important;
     }
 
+    .product-details-page {
+        overflow-x: hidden;
+    }
+
     .main-image-wrapper {
         border-radius: 22px;
         overflow: hidden;
@@ -831,6 +1048,14 @@ export default {
 
 /* Tablet adjustments */
 @media (min-width: 600px) and (max-width: 959px) {
+    .product-details-page {
+        padding-top: 105px !important;
+    }
+
+    .product-main-image {
+        margin-top: 12px !important;
+    }
+
     .recommendation-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 16px;
@@ -870,6 +1095,14 @@ export default {
 
 /* Extra small mobile devices */
 @media (max-width: 599px) {
+    .product-details-page {
+        padding-top: 88px !important;
+    }
+
+    .product-main-image {
+        margin-top: 8px !important;
+    }
+
     .recommendation-grid {
         grid-template-columns: 1fr;
     }
