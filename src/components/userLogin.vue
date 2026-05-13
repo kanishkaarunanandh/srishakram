@@ -13,9 +13,9 @@
       <p class="subtitle">Sign in to continue</p>
 
       <!-- Google -->
-      <button class="google-btn" @click="loginWithGoogle">
+      <!-- <button class="google-btn" @click="loginWithGoogle">
         Continue with Google
-      </button>
+      </button> -->
 
       <div class="divider">
         <span>or</span>
