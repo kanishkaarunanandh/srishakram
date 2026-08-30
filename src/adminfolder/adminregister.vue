@@ -54,10 +54,9 @@
     </div>
   </div>
 </template>
-<style scoped src=""></style>
+<style scoped src="@/adminfolder/admin styles/adminregister.css"></style>
 <script>
-import api from '@/adminfolder/axios.js';
-import '@/adminfolder/admin styles/adminregister.css';
+import api from '@/adminfolder/axios.js'
 
 export default {
   data() {

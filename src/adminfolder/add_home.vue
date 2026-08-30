@@ -137,8 +137,6 @@
   </v-app>
 </template>
 <style scoped src="@/adminfolder/admin styles/add_home.css"></style>
-
-<style scoped src=""></style>
 <script>
 import api from "./axios.js"
 export default {

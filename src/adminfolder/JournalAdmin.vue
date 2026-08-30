@@ -237,10 +237,9 @@
 
   </v-container>
 </template>
-<style scoped src=""></style>
+<style scoped src="@/adminfolder/admin styles/journalAdmin.css"></style>
 <script>
 import api from "@/adminfolder/axios";
-import '@/adminfolder/admin styles/journalAdmin.css';
 
 export default {
   data() {

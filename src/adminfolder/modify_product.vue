@@ -215,11 +215,10 @@
   </div>
 </template>
 
-<style scoped src=""></style>
+<style scoped src="@/adminfolder/admin styles/modifyProduct.css"></style>
 <script>
 import api from "@/adminfolder/axios"
 import { resolveMediaUrl } from "@/utils/mediaUrl";
-import '@/adminfolder/admin styles/modifyProduct.css'
 
 export default {
   data() {

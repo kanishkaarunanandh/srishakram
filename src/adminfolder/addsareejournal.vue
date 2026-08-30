@@ -188,11 +188,9 @@
     </v-row>
   </v-container>
 </template>
-<style scoped src=""></style>
+<style scoped src="@/adminfolder/admin styles/add_sareejournal.css"></style>
 <script>
 import api from "@/adminfolder/axios"
-import '@/adminfolder/admin styles/add_sareejournal.css'
-
 export default {
   data() {
     return {

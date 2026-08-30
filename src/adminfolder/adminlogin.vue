@@ -53,12 +53,10 @@
   </div>
 </template>
 
-<style scoped src=""></style>
+<style scoped src="@/adminfolder/admin styles/adminlogin.css"></style>
 <script>
 import api from "@/adminfolder/axios";
 import { startAutoLogout } from "@/utils/auth";
-import '@/adminfolder/admin styles/adminlogin.css';
-
 const backendOrigin = import.meta.env.VITE_BACKEND_URL || "http://localhost:8080/";
 
 export default {

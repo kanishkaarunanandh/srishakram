@@ -396,10 +396,9 @@
   </v-container>
 </template>
 
-<style scoped src=""></style>
+<style scoped src="@/adminfolder/admin styles/orders.css"></style>
 <script>
 import axios from "axios";
-import '@/adminfolder/admin styles/orders.css'
 
 export default {
   name: "AdminOrders",

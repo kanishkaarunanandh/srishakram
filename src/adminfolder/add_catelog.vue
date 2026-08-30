@@ -75,7 +75,7 @@
 </v-dialog> 
 </template>
 <style scoped src="@/adminfolder/admin styles/add_catelog.css"></style>
-<style scoped src=""></style>
+
 <script>
 import api from  '@/adminfolder/axios';
 export default

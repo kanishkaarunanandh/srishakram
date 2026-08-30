@@ -300,9 +300,8 @@
             </div>
         </div>
 </template>
-<style scoped src="@/adminfolder/admin styles/showproduct.css"></style>
+<style scoped src="@/adminfolder/admin styles/showProduct.css"></style>
 
-<style scoped src=""></style>
 <script>
 import { resolveMediaUrl } from '@/utils/mediaUrl'
 import api from "./axios.js";
