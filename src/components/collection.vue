@@ -250,7 +250,7 @@
             :style="getDelayStyle(product.id)"
             @click="showdetails(product)"
           >
-            <v-card flat class="product-card">
+            <v-card flat class="collectionproduct-card">
               <div class="product-image-wrapper">
                <v-img :src="getImageUrl(product.img)" aspect-ratio="0.75" cover />
                 <span v-if="product.instock || product.newArrival" class="badge">
@@ -325,22 +325,25 @@
     </div>
   </v-container>
 </template>
+<style scoped src="@/components/stylesheets/collections.css"></style>
 
 <script>
 import api from '@/adminfolder/axios'
 import { resolveMediaUrl } from '@/utils/mediaUrl'
+import { demoProducts } from '@/data/demoProducts'
 
 export default {
   data() {
     return {
-      products: [],
+      products: [...demoProducts],
+      allDemoProducts: [...demoProducts],
       filters: ['AVAILABILITY', 'PRICE', 'COLOR', 'CATEGORY', 'SUBCATEGORY'],
       allColors: [],
       page: 0,
       totalPages: 0,
       priceRange: [1000, 150000],
       inStockOnly: false,
-      newArrivalOnly: false,   
+      newArrivalOnly: false,
       inStockCount: 0,
       newArrivalCount: 0,
       visibleCount: 9,
@@ -355,6 +358,7 @@ export default {
       selectedSubcategoryFilter: null,
       isLoadingMore: false,
       mobileFiltersOpen: false,
+      backendAvailable: false
     }
   },
 
@@ -401,9 +405,11 @@ export default {
 
     paginationPages() {
       const pages = []
+
       for (let i = 1; i <= Math.min(5, this.totalPages); i++) {
         pages.push(i)
       }
+
       return pages
     },
 
@@ -416,23 +422,13 @@ export default {
     if (this.colorFromSearch) {
       this.selectedColors = [this.colorFromSearch]
     }
-    
-    this.fetchCategoryFilters().then(() => {
-      if (this.$route.query.category && this.$route.query.category !== 'All Kanchipuram Silk Saree') {
-        const matchedCategory = this.categoriesFilter.find(
-          c => c.Category === this.$route.query.category
-        )
-        this.selectedCategoryFilter = matchedCategory || null
-      } else {
-        this.selectedCategoryFilter = null
-      }
-      
-      if (this.$route.query.subcategory) {
-        this.selectedSubcategoryFilter = this.$route.query.subcategory
-      }
-    })
-    
+
+    this.createStaticCategories()
+    this.fetchStaticColors()
     this.fetchProducts()
+    this.fetchCategoryFilters()
+    this.fetchBackendProducts()
+
     window.addEventListener('scroll', this.handleScroll)
   },
 
@@ -442,10 +438,14 @@ export default {
 
   watch: {
     '$route.query'(newQuery, oldQuery) {
-      if (newQuery.category && newQuery.category !== 'All Kanchipuram Silk Saree') {
+      if (
+        newQuery.category &&
+        newQuery.category !== 'All Kanchipuram Silk Saree'
+      ) {
         const matchedCategory = this.categoriesFilter.find(
           c => c.Category === newQuery.category
         )
+
         this.selectedCategoryFilter = matchedCategory || null
       } else {
         this.selectedCategoryFilter = null
@@ -463,14 +463,16 @@ export default {
         if (newQuery.color) {
           this.selectedColors = [newQuery.color]
         }
-        
+
         this.fetchColors(newQuery.category)
       }
 
       this.page = 0
       this.visibleCount = 9
       this.animatedIds.clear()
+
       this.fetchProducts()
+      this.fetchBackendProducts()
     },
 
     selectedColors() {
@@ -486,33 +488,133 @@ export default {
   },
 
   methods: {
-    getImageUrl(path) {
-      return resolveMediaUrl(path);
+   getImageUrl(path) {
+  if (!path) return ''
+
+  if (
+    path.startsWith('http') ||
+    path.startsWith('data:image') ||
+    path.startsWith('/')
+  ) {
+    return path
+  }
+
+  return resolveMediaUrl(path)
+},
+
+    normalizeProduct(product) {
+      if (!product) return null
+
+      return {
+        ...product,
+        id: product.id || product.productId,
+        productId: product.productId || product.id,
+        images:
+          Array.isArray(product.images) && product.images.length
+            ? product.images
+            : product.img
+              ? [product.img]
+              : [],
+        price: Number(product.price || 0),
+        offer_price: Number(product.offer_price || 0),
+        instock: Boolean(product.instock),
+        newArrival: Boolean(product.newArrival)
+      }
     },
+
+    createStaticCategories() {
+      const categoryMap = {}
+
+      demoProducts.forEach(product => {
+        if (!product.category) return
+
+        if (!categoryMap[product.category]) {
+          categoryMap[product.category] = {
+            id: product.category,
+            Category: product.category,
+            Subcategory: []
+          }
+        }
+
+        if (
+          product.subcategory &&
+          !categoryMap[product.category].Subcategory.includes(
+            product.subcategory
+          )
+        ) {
+          categoryMap[product.category].Subcategory.push(
+            product.subcategory
+          )
+        }
+      })
+
+      this.categoriesFilter = Object.values(categoryMap)
+
+      if (
+        this.$route.query.category &&
+        this.$route.query.category !== 'All Kanchipuram Silk Saree'
+      ) {
+        const matchedCategory = this.categoriesFilter.find(
+          c => c.Category === this.$route.query.category
+        )
+
+        this.selectedCategoryFilter = matchedCategory || null
+      }
+
+      if (this.$route.query.subcategory) {
+        this.selectedSubcategoryFilter =
+          this.$route.query.subcategory
+      }
+    },
+
+    fetchStaticColors() {
+      const colors = new Set()
+
+      demoProducts.forEach(product => {
+        if (product.color) {
+          colors.add(product.color)
+        }
+      })
+
+      this.allColors = [...colors]
+    },
+
     applyCategoryFilter() {
       this.selectedSubcategoryFilter = null
       this.page = 0
-      
-      const newCategory = this.selectedCategoryFilter?.Category
-      
+      this.visibleCount = 9
+
+      const newCategory =
+        this.selectedCategoryFilter?.Category
+
       if (newCategory) {
         this.$router.push({
           name: 'Collection',
-          query: { category: newCategory }
+          query: {
+            category: newCategory
+          }
         })
       } else {
         this.$router.push({
           name: 'Collection',
-          query: { category: 'All Kanchipuram Silk Saree' }
+          query: {
+            category: 'All Kanchipuram Silk Saree'
+          }
         })
       }
     },
 
     applySubcategoryFilter() {
       this.page = 0
-      const categoryValue = this.selectedCategoryFilter?.Category || this.activeFilter
-      const subcategoryValue = this.selectedSubcategoryFilter
-      
+      this.visibleCount = 9
+
+      const categoryValue =
+        this.selectedCategoryFilter?.Category ||
+        this.$route.query.category
+
+      const subcategoryValue =
+        this.selectedSubcategoryFilter
+
       if (subcategoryValue) {
         this.$router.push({
           name: 'Collection',
@@ -524,29 +626,79 @@ export default {
       } else {
         this.$router.push({
           name: 'Collection',
-          query: { category: categoryValue }
+          query: {
+            category: categoryValue
+          }
         })
       }
     },
 
     async fetchCategoryFilters() {
-      const res = await api.get("/catelog")
-      this.categoriesFilter = res.data
-      return res.data
+      try {
+        const res = await api.get('/catelog')
+
+        if (
+          Array.isArray(res.data) &&
+          res.data.length
+        ) {
+          this.categoriesFilter = res.data
+          this.backendAvailable = true
+        }
+
+        return res.data
+      } catch (error) {
+        console.log(
+          'Backend unavailable. Using static categories.'
+        )
+
+        return this.categoriesFilter
+      }
     },
 
     fetchColors(category = null) {
-      const filterValue = category || this.activeFilter
-      if (!filterValue) return
+      const filterValue =
+        category ||
+        this.$route.query.category
 
-      api.get('upload/getproduct/colors', {
-        params: { category: filterValue }
-      }).then(res => {
-        this.allColors = res.data
-      }).catch(err => {
-        console.error('Error fetching colors:', err)
-        this.allColors = []
+      const colors = new Set()
+
+      demoProducts.forEach(product => {
+        const categoryMatches =
+          !filterValue ||
+          filterValue === 'All Kanchipuram Silk Saree' ||
+          product.category === filterValue
+
+        if (categoryMatches && product.color) {
+          colors.add(product.color)
+        }
       })
+
+      this.allColors = [...colors]
+
+      if (
+        !filterValue ||
+        filterValue === 'All Kanchipuram Silk Saree'
+      ) {
+        return
+      }
+
+      api.get('/upload/getproduct/colors', {
+        params: {
+          category: filterValue
+        }
+      })
+        .then(res => {
+          if (
+            Array.isArray(res.data) &&
+            res.data.length
+          ) {
+            this.allColors = res.data
+            this.backendAvailable = true
+          }
+        })
+        .catch(() => {
+          console.log('Using static colors.')
+        })
     },
 
     handleScroll() {
@@ -554,27 +706,37 @@ export default {
       if (this.isLoadingMore) return
       if (!this.$refs.sentinel) return
 
-      const rect = this.$refs.sentinel.getBoundingClientRect()
+      const rect =
+        this.$refs.sentinel.getBoundingClientRect()
 
-      if (rect.top < window.innerHeight - 150 && this.visibleCount < this.products.length) {
+      if (
+        rect.top < window.innerHeight - 150 &&
+        this.visibleCount < this.products.length
+      ) {
         this.isLoadingMore = true
 
-        const prev = this.visibleCount
+        const previousCount =
+          this.visibleCount
+
         this.visibleCount += 9
 
         this.$nextTick(() => {
           this.visibleProducts
-            .slice(prev)
-            .forEach(p => this.animatedIds.add(p.id))
+            .slice(previousCount)
+            .forEach(product => {
+              this.animatedIds.add(product.id)
+            })
 
           setTimeout(() => {
             this.isLoadingMore = false
 
-            if (this.visibleCount >= this.products.length) {
-              this.showPagination = true
-              this.useInfiniteScroll = false
+            if (
+              this.visibleCount >=
+              this.products.length
+            ) {
+              this.showPagination = false
             }
-          }, 800)
+          }, 500)
         })
       }
     },
@@ -584,30 +746,146 @@ export default {
     },
 
     getDelayStyle(id) {
-      const index = [...this.animatedIds].indexOf(id)
+      const index =
+        [...this.animatedIds].indexOf(id)
+
       if (index === -1) return {}
 
       return {
-        animationDelay: `${(index % 3) * 0.25}s`
+        animationDelay:
+          `${(index % 3) * 0.25}s`
       }
     },
 
     applyAvailabilityFilter() {
       this.page = 0
+      this.visibleCount = 9
       this.fetchProducts()
+      this.fetchBackendProducts()
     },
 
     applyColorFilter() {
+      this.page = 0
+      this.visibleCount = 9
       this.fetchProducts()
+      this.fetchBackendProducts()
     },
 
-    fetchProducts(category = null, subcategory = null) {
-      let filterValue = category || this.activeFilter || 'All Kanchipuram Silk Saree'
-      let subValue = subcategory ?? this.$route.query.subcategory ?? null
+    fetchProducts() {
+      let filteredProducts = [...demoProducts]
 
-      if (typeof filterValue === "object") {
-        filterValue = filterValue.value || filterValue.title
+      const category =
+        this.$route.query.category
+
+      const subcategory =
+        this.$route.query.subcategory
+
+      if (
+        category &&
+        category !== 'All Kanchipuram Silk Saree'
+      ) {
+        filteredProducts =
+          filteredProducts.filter(
+            product =>
+              product.category === category
+          )
       }
+
+      if (subcategory) {
+        filteredProducts =
+          filteredProducts.filter(
+            product =>
+              product.subcategory ===
+              subcategory
+          )
+      }
+
+      filteredProducts =
+        filteredProducts.filter(product => {
+          const price =
+            Number(product.price || 0)
+
+          return (
+            price >= this.priceRange[0] &&
+            price <= this.priceRange[1]
+          )
+        })
+
+      if (this.inStockOnly) {
+        filteredProducts =
+          filteredProducts.filter(
+            product =>
+              product.instock === true
+          )
+      }
+
+      if (this.newArrivalOnly) {
+        filteredProducts =
+          filteredProducts.filter(
+            product =>
+              product.newArrival === true
+          )
+      }
+
+      if (this.selectedColors.length) {
+        filteredProducts =
+          filteredProducts.filter(
+            product =>
+              this.selectedColors.includes(
+                product.color
+              )
+          )
+      }
+
+      if (
+        this.$route.query.color &&
+        !this.selectedColors.length
+      ) {
+        filteredProducts =
+          filteredProducts.filter(
+            product =>
+              product.color ===
+              this.$route.query.color
+          )
+      }
+
+      this.products =
+        filteredProducts.map(product =>
+          this.normalizeProduct(product)
+        )
+
+      this.inStockCount =
+        filteredProducts.filter(
+          product => product.instock
+        ).length
+
+      this.newArrivalCount =
+        filteredProducts.filter(
+          product => product.newArrival
+        ).length
+
+      this.totalPages =
+        Math.ceil(
+          filteredProducts.length / 9
+        )
+
+      this.visibleCount =
+        Math.min(
+          9,
+          this.products.length
+        )
+
+      this.backendAvailable = false
+    },
+
+    async fetchBackendProducts() {
+      const filterValue =
+        this.$route.query.category ||
+        'All Kanchipuram Silk Saree'
+
+      const subValue =
+        this.$route.query.subcategory ||
+        null
 
       const params = {
         category: filterValue,
@@ -619,23 +897,64 @@ export default {
         color: this.selectedColors
       }
 
-      if (subValue && subValue !== 'false') {
+      if (
+        subValue &&
+        subValue !== 'false'
+      ) {
         params.subcategory = subValue
       }
 
-      api.get("/upload/getproduct/category", { params })
-        .then(res => {
-          this.products = res.data.content
-          this.totalPages = res.data.totalPages
-          this.inStockCount = res.data.inStockCount
-          this.newArrivalCount = res.data.newArrivalCount
-        })
-        .catch(err => console.error(err))
+      try {
+        const res = await api.get(
+          '/upload/getproduct/category',
+          { params }
+        )
+
+        if (
+          res.data &&
+          Array.isArray(
+            res.data.content
+          )
+        ) {
+          this.products =
+            res.data.content.map(
+              product =>
+                this.normalizeProduct(
+                  product
+                )
+            )
+
+          this.totalPages =
+            res.data.totalPages || 0
+
+          this.inStockCount =
+            res.data.inStockCount || 0
+
+          this.newArrivalCount =
+            res.data.newArrivalCount || 0
+
+          this.backendAvailable = true
+
+          this.visibleCount =
+            Math.min(
+              9,
+              this.products.length
+            )
+        }
+      } catch (error) {
+        console.log(
+          'Backend sleeping. Static products are being used.'
+        )
+
+        this.backendAvailable = false
+      }
     },
 
     applyPriceFilter() {
       this.page = 0
+      this.visibleCount = 9
       this.fetchProducts()
+      this.fetchBackendProducts()
     },
 
     goToPage(p) {
@@ -645,20 +964,26 @@ export default {
 
       this.scrollToTop(() => {
         this.fetchProducts()
+        this.fetchBackendProducts()
       })
     },
 
     nextPage() {
-      if (this.page < this.totalPages - 1) {
+      if (
+        this.page <
+        this.totalPages - 1
+      ) {
         this.useInfiniteScroll = false
         this.page++
         this.scrollToTop()
         this.fetchProducts()
+        this.fetchBackendProducts()
       }
     },
 
     scrollToTop(cb) {
-      const top = this.$el.offsetTop || 0
+      const top =
+        this.$el.offsetTop || 0
 
       window.scrollTo({
         top,
@@ -666,435 +991,23 @@ export default {
       })
 
       setTimeout(() => {
-        cb && cb()
+        if (cb) cb()
       }, 400)
     },
 
     showdetails(product) {
+      const productId =
+        product.id ||
+        product.productId
+
       this.$router.push({
         name: 'showproduct',
-        params: { id: product.id }
+        params: {
+          id: productId
+        }
       })
     }
   }
 }
 </script>
 
-<style scoped>
-/* ================= CONTAINER ================= */
-.collection-container {
-  max-width: 1670px;
-  padding: 20px 75px;
-  box-sizing: border-box;
-  background: #fffaf4;
-  color: #2b1511;
-}
-
-/* ================= FILTERS ================= */
-.filters-col {
-  position: relative;
-}
-
-.mobile-filter-btn {
-  display: none;
-  margin-bottom: 20px;
-}
-
-.desktop-filters {
-  display: block;
-}
-
-.sticky-filters {
-  position: sticky;
-  top: 150px;
-  align-self: start;
-}
-
-.filter-title {
-  letter-spacing: 2px;
-  font-size: 13px;
-  font-weight: 500;
-  border-bottom: 1px solid #f6f2ec;
-}
-
-.availability-box {
-  padding-top: 4px;
-}
-
-.availability-label {
-  font-size: 13px;
-  color: #000;
-}
-
-.count {
-  color: #777;
-  font-size: 12px;
-}
-
-.price-range-text {
-  font-size: 12px;
-  color: #000;
-  margin-bottom: 4px;
-}
-
-.price-range-text span {
-  font-size: 11px;
-  color: #777;
-}
-
-.text-right {
-  text-align: right;
-}
-
-/* ================= PRODUCTS GRID ================= */
-.products-grid {
-  margin-top: 10px;
-  align-items: stretch;
-  row-gap: 28px;
-}
-
-.product-col {
-  cursor: pointer;
-  display: flex;
-}
-
-.product-card {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.3s ease;
-}
-
-.product-card:hover {
-  transform: translateY(-5px);
-}
-
-.product-image-wrapper {
-  position: relative;
-  overflow: hidden;
-  aspect-ratio: 1 / 1.16;
-  width: 100%;
-}
-
-.product-image-wrapper :deep(.v-img) {
-  height: 100%;
-}
-
-.badge {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: #000;
-  color: #fff;
-  font-size: 11px;
-  padding: 4px 8px;
-  z-index: 2;
-}
-
-.product-info {
-  flex: 1;
-  padding: 10px 0 0 !important;
-}
-
-.product-title {
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 4px;
-  line-height: 1.35;
-}
-
-.product-price {
-  font-size: 13px;
-  color: #333;
-}
-
-.price-note {
-  color: #777;
-  font-size: 11px;
-  display: block;
-  margin-top: 2px;
-}
-
-/* ================= ANIMATIONS ================= */
-.product-animate {
-  opacity: 0;
-  animation: fadeSlideUp 0.8s ease forwards;
-}
-
-@keyframes fadeSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.scroll-sentinel {
-  height: 1px;
-}
-
-/* ================= PAGINATION ================= */
-.pagination-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 16px;
-  margin: 80px 0 40px;
-}
-
-.page-number {
-  font-size: 14px;
-  color: #aaa;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-
-.page-number:hover {
-  color: #666;
-}
-
-.page-number.active {
-  color: #000;
-  font-weight: 600;
-}
-
-.dots {
-  font-size: 14px;
-  color: #aaa;
-}
-
-.next-btn {
-  width: 36px;
-  height: 36px;
-  border: none;
-  background: #000;
-  color: #fff;
-  font-size: 18px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.next-btn:hover {
-  background: #333;
-}
-
-/* ================= BOTTOM DESCRIPTION ================= */
-.bottom-description {
-  max-width: 900px;
-  margin: 90px auto 40px;
-  text-align: center;
-  background: #fffaf4;
-}
-
-.description-title {
-  font-weight: bold;
-  font-size: 14px;
-  margin-bottom: 16px;
-  color: #3a1511;
-}
-
-.description-text {
-  font-size: 12px;
-  line-height: 1.6;
-  color: #4b2b24;
-}
-
-/* ================= WEDDING BANNER ================= */
-.wedding-banner {
-  background-color: #FCF8F5;
-  width: 100%;
-  margin-top: 30px;
-  padding: 30px 0;
-}
-
-.banner-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 60px;
-}
-
-.banner-text {
-  font-size: 14px;
-}
-
-.banner-title {
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.banner-subtitle {
-  color: #666;
-}
-
-.shop-btn {
-  border-radius: 0;
-  font-size: 10px;
-  letter-spacing: 1px;
-}
-
-/* ================= MOBILE STYLES ================= */
-@media (max-width: 1024px) {
-  .collection-container {
-    max-width: 100%;
-    padding: 18px 18px 34px;
-    background: #fffaf4;
-    color: #2b1511;
-  }
-
-  /* Show mobile filter button, hide desktop filters */
-  .mobile-filter-btn {
-    display: block;
-  }
-
-  .desktop-filters {
-    display: none;
-  }
-
-  .products-grid {
-    margin-top: 4px;
-    margin-left: -6px;
-    margin-right: -6px;
-    row-gap: 22px;
-  }
-
-  .product-col {
-    flex: 0 0 100%;
-    max-width: 100%;
-    padding: 0 6px 24px !important;
-  }
-
-  .product-card {
-    padding: 8px 8px 13px;
-    border: 1px solid rgba(194, 148, 78, 0.18);
-    border-radius: 18px;
-    background: rgba(255, 250, 244, 0.72);
-    box-shadow: 0 14px 30px rgba(72, 23, 12, 0.07);
-  }
-
-  .product-image-wrapper {
-    aspect-ratio: 1 / 1.12;
-    border-radius: 15px;
-    box-shadow: 0 12px 26px rgba(36, 8, 7, 0.09);
-  }
-
-  .product-info {
-    padding: 14px 4px 2px !important;
-  }
-
-  .product-title {
-    color: #34110e;
-    font-size: 14px;
-    line-height: 1.35;
-  }
-
-  .product-price {
-    color: rgba(58, 21, 17, 0.76);
-    font-size: 12px;
-    line-height: 1.45;
-  }
-
-  .price-note {
-    font-size: 11px;
-    line-height: 1.4;
-  }
-
-  .badge {
-    border-radius: 999px;
-    background: #6f1d18;
-    font-size: 10px;
-    padding: 5px 9px;
-  }
-
-  /* Pagination */
-  .pagination-wrapper {
-    margin: 40px 0 20px;
-    gap: 12px;
-  }
-
-  .page-number {
-    font-size: 12px;
-  }
-
-  .next-btn {
-    width: 32px;
-    height: 32px;
-    font-size: 16px;
-  }
-
-  /* Bottom description */
-  .bottom-description {
-    margin: 58px auto 34px;
-    padding: 0 6px;
-    max-width: 100%;
-  }
-
-  .description-title {
-    color: #3a1511;
-    font-size: 16px;
-    line-height: 1.35;
-    letter-spacing: 0.08em;
-  }
-
-  .description-text {
-    color: rgba(58, 21, 17, 0.76);
-    font-size: 14px;
-    line-height: 1.8;
-    text-align: left;
-  }
-
-  /* Wedding banner */
-  .banner-content {
-    flex-direction: column;
-    gap: 16px;
-    padding: 0 16px;
-    text-align: center;
-  }
-
-  .banner-text {
-    font-size: 14px;
-    line-height: 1.55;
-  }
-}
-
-@media (min-width: 560px) and (max-width: 1024px) {
-  .product-col {
-    flex: 0 0 50%;
-    max-width: 50%;
-  }
-
-  .product-image-wrapper {
-    aspect-ratio: 1 / 1.14;
-  }
-}
-
-@media (max-width: 480px) {
-  .collection-container {
-    padding: 14px 12px 30px;
-  }
-
-  .mobile-filter-btn {
-    min-height: 42px;
-  }
-
-  .product-card {
-    border-radius: 20px;
-  }
-}
-
-/* Tablet adjustments */
-@media (max-width: 1280px) and (min-width: 961px) {
-  .collection-container {
-    padding: 20px 30px;
-  }
-
-  .banner-content {
-    padding: 0 30px;
-  }
-}
-</style>

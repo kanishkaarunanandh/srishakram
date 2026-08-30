@@ -237,8 +237,10 @@
 
   </v-container>
 </template>
+<style scoped src=""></style>
 <script>
 import api from "@/adminfolder/axios";
+import '@/adminfolder/admin styles/journalAdmin.css';
 
 export default {
   data() {
@@ -339,125 +341,3 @@ export default {
   }
 };
 </script>
-<style scoped>
-.zari-section {
-  margin-top: 30px;
-}
-
-.zari-box {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-}
-
-.zari-box img {
-  width: 220px;
-  border-radius: 12px;
-}
-.edit-wrapper {
-  background: linear-gradient(135deg, #f7efe8, #efe3d7);
-}
-
-/* LEFT PANEL */
-.editor-panel {
-  background: rgba(255,255,255,0.75);
-  backdrop-filter: blur(14px);
-  padding: 24px;
-  border-radius: 20px;
-}
-
-.editor-title {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 20px;
-  color: maroon;
-}
-
-.section-title {
-  margin: 20px 0 10px;
-  font-weight: 600;
-  color: maroon;
-}
-
-.editor-block {
-  margin-bottom: 18px;
-}
-
-/* RIGHT PANEL */
-.preview-panel {
-  background: #fffaf5;
-  border-radius: 24px;
-  padding: 20px;
-}
-
-/* HERO */
-.hero-preview {
-  position: relative;
-  height: 300px;
-  border-radius: 18px;
-  overflow: hidden;
-}
-
-.hero-preview img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.hero-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: flex-end;
-  padding: 20px;
-  background: linear-gradient(to top, rgba(0,0,0,.6), transparent);
-  color: white;
-}
-
-/* HERITAGE */
-.heritage-row {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-.heritage-row.reverse {
-  flex-direction: row-reverse;
-}
-
-.heritage-row img {
-  width: 200px;
-  height: 250px;
-  border-radius: 12px;
-  object-fit: cover;
-}
-
-/* REVIEW */
-.review-card {
-  width: 250px;
-  background: white;
-  padding: 16px;
-  border-radius: 16px;
-  margin-right: 16px;
-  box-shadow: 0 6px 15px rgba(0,0,0,.1);
-}
-
-.review-card img {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  margin-bottom: 10px;
-}
-
-/* BUTTONS */
-.add-btn {
-  background: linear-gradient(45deg, #6a11cb, #2575fc);
-  color: white;
-}
-
-.save-btn {
-  background: linear-gradient(45deg, #00c853, #64dd17);
-  color: white;
-}
-
-</style>

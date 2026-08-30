@@ -144,10 +144,12 @@
   </v-container>
 </template>
 
+<style scoped src="@/adminfolder/admin styles/categoryAdmin.css"></style>
 <script>
 import api from "@/adminfolder/axios"
 import { resolveMediaUrl } from "@/utils/mediaUrl";
-import router from "@/router";
+import router from "@/components/index";
+
 
 export default {
   data() {
@@ -164,7 +166,7 @@ export default {
       newImageFile: null,
       previewImage: null,
 
-      host: "https://srishakram-backend-v2.onrender.com"
+      host: "http://localhost:8080"
     };
   },
 
@@ -295,61 +297,3 @@ export default {
 };
 </script>
 
-<style scoped>
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 30px;
-}
-
-.add-btn {
-  background: linear-gradient(45deg, #6a11cb, #2575fc);
-  color: white;
-}
-
-.modern-card {
-  border-radius: 16px;
-  overflow: hidden;
-  transition: 0.3s;
-  background: #ffffff;
-}
-
-.modern-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-}
-
-.card-img {
-  border-bottom: 1px solid #eee;
-}
-
-.action {
-  cursor: pointer;
-  margin-left: 10px;
-}
-
-.action.edit {
-  color: #2196f3;
-}
-
-.action.delete {
-  color: #f44336;
-}
-
-.chip {
-  margin: 4px;
-}
-
-.dialog-card {
-  border-radius: 16px;
-  padding: 20px;
-}
-
-.save-btn {
-  background: linear-gradient(45deg, #00c853, #64dd17);
-  color: white;
-}
-
-</style>

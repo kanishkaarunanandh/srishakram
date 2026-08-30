@@ -1,4 +1,4 @@
-const BACKEND_URL = "https://srishakram-backend-v2.onrender.com";
+const BACKEND_URL = "http://localhost:8080/";
 const PING_INTERVAL_MS = 300000;
 
 let keepAliveInterval = null;

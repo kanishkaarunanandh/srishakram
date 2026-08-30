@@ -2,7 +2,7 @@ import axios from "axios";
 import { logout } from "@/utils/auth";
 
 const api = axios.create({
-  baseURL: "https://srishakram-backend-v2.onrender.com",
+  baseURL: "http://localhost:8080",
 });
 
 api.interceptors.request.use((config) => {

@@ -1,6 +1,6 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-import router from './router'
+import router from './components/index.js'
 import { registerPlugins } from '@/plugins'
 import { startBackendKeepAlive } from '@/utils/keepAlive'
 

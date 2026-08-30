@@ -271,10 +271,12 @@
   </div>
 </template>
 
+<style scoped src="@/adminfolder/admin styles/checkout.css"></style>
 <script>
 import api from "@/adminfolder/axios";
 import { Country, State } from "country-state-city";
 import { showToast } from "@/utils/toast";
+
 
 export default {
   name: "CheckoutPage",
@@ -286,25 +288,23 @@ export default {
         emailOffers: false,
       },
       delivery: {
-  country: "",
-  countrySearch: "",
-  state: "",
-  stateSearch: "",
-  firstName: "",
-  lastName: "",
-  //company: "",
-  address: "",
-  city: "",
-  pinCode: "",
-  phone: "",
-  saveInfo: false,
-   razorpayOrderId: null,
-},
-statesList: [],          
-filteredStates: [],      
+      country: "",
+      countrySearch: "",
+      state: "",
+      stateSearch: "",
+      firstName: "",
+      lastName: "",
+      //company: "",
+      address: "",
+      city: "",
+      pinCode: "",
+      phone: "",
+      saveInfo: false,
+      },
+      statesList: [],          
+      filteredStates: [],      
       countries: [],
       filteredCountries: [],
-      statesList: [],
       cartItems: [],
       subtotal: 0,
       estimatedTaxes: 0.05, // 5% GST for example
@@ -419,12 +419,13 @@ this.subtotal = this.cartItems.reduce(
       this.delivery.countrySearch = country.name;
       this.filteredCountries = [];
     },
-    payNow() {
+    async payNow() {
   if (!this.cartItems.length) {
     showToast("Your cart is empty", "warning");
     return;
   }
-   const requiredFields = [
+
+  const requiredFields = [
     { value: this.delivery.firstName, name: "First Name" },
     { value: this.delivery.lastName, name: "Last Name" },
     { value: this.delivery.address, name: "Address" },
@@ -436,11 +437,18 @@ this.subtotal = this.cartItems.reduce(
     { value: this.contact.email, name: "Email" },
   ];
 
-  const emptyField = requiredFields.find(f => !f.value || f.value.toString().trim() === "");
+  const emptyField = requiredFields.find(
+    (f) => !f.value || f.value.toString().trim() === ""
+  );
+
   if (emptyField) {
-    showToast(`Please fill the required field: ${emptyField.name}`, "warning");
+    showToast(
+      `Please fill the required field: ${emptyField.name}`,
+      "warning"
+    );
     return;
   }
+
   const payload = {
     name: `${this.delivery.firstName} ${this.delivery.lastName}`,
     email: this.contact.email,
@@ -450,707 +458,49 @@ this.subtotal = this.cartItems.reduce(
     state: this.delivery.state,
     pinCode: this.delivery.pinCode,
     country: this.delivery.country || "India",
+
     items: this.cartItems,
+
     amount: Number(this.total),
-    paymentMethod: this.paymentMethod, 
+
+    // Stores either "cod" or "razorpay"
+    paymentMethod: this.paymentMethod,
   };
 
-  if (this.paymentMethod === "cod") {
-    
-    api
-      .post("/create-order", payload)
-      .then((res) => {
-        showToast(`Order placed successfully. Order ID: ${res.data.orderId}`, "success");
-        const isBuyNow = !!sessionStorage.getItem("buyNowItem");
-        if (!isBuyNow) {
-          api.delete("/cart/clear");
-        } else {
-          sessionStorage.removeItem("buyNowItem");
-        }
-        this.cartItems = [];
-        this.subtotal = 0;
-        this.$router.push("/orderStatus");
-      })
-      .catch((err) => {
-        console.error(err.response?.data);
-        showToast("Please fill all required fields", "warning");
-      });
-  } else {
-    // ✅ Razorpay: create order and open Razorpay modal
-    api
-      .post("/create-order", payload)
-      .then((res) => this.openRazorpay(res.data))
-      .catch((err) => {
-        console.error(err.response?.data);
-        showToast("Please fill all required fields", "warning");
-      });
-  }
-},
-
-    openRazorpay(order) {
-
-  // store order id for failure case
-  this.razorpayOrderId = order.razorpayOrderId;
-
-  const options = {
-    key: "rzp_test_SBY90j69ONO15o",
-    amount: order.amount * 100,
-    currency: "INR",
-    name: "Sri Shakram",
-    order_id: order.razorpayOrderId,
-
-    prefill: {
-      name: order.name,
-      email: order.email,
-      contact: order.phoneNo,
-    },
-
-    handler: (response) => {
-      this.verifyPayment(response);
-    },
-
-    modal: {
-      ondismiss: async () => {
-        showToast("Payment cancelled", "info");
-
-        // 🔥 CALL BACKEND TO MARK FAILED
-        if (this.razorpayOrderId) {
-await api.post("/handle-payment-callback", {
-  razorpay_order_id: this.razorpayOrderId,
-  razorpay_payment_id: "",
-  razorpay_signature: ""
-});
-        }
-
-        this.$router.push("/orderStatus");
-      }
-    }
-  };
-
-  const rzp = new window.Razorpay(options);
-  rzp.open();
-},
- async verifyPayment(response) {
   try {
+    const res = await api.post("/create-order", payload);
 
-    const res = await api.post("/handle-payment-callback", response);
+    showToast(
+      `Order placed successfully. Order ID: ${res.data.orderId}`,
+      "success"
+    );
 
-    if (res.data.success) {
+    const isBuyNow = !!sessionStorage.getItem("buyNowItem");
 
-      showToast(`Payment successful. Order ID: ${res.data.orderId}`, "success");
-
-      const isBuyNow = !!sessionStorage.getItem("buyNowItem");
-
-      if (!isBuyNow) {
-        await api.delete("/cart/clear");
-      } else {
-        sessionStorage.removeItem("buyNowItem");
-      }
-
-      this.cartItems = [];
-      this.subtotal = 0;
-      this.$router.push("/orderStatus");
-
+    if (!isBuyNow) {
+      await api.delete("/cart/clear");
     } else {
-
-      // 🔥 MARK FAILED
-      if (this.razorpayOrderId) {
-        await api.post("/handle-payment-callback", {
-  razorpay_order_id: this.razorpayOrderId,
-  razorpay_payment_id: "",
-  razorpay_signature: ""
-});
-
-      }
-
-      showToast("Payment failed", "error");
+      sessionStorage.removeItem("buyNowItem");
     }
+
+    this.cartItems = [];
+    this.subtotal = 0;
+
+    this.$router.push("/orderStatus");
 
   } catch (err) {
+    console.error(err);
 
-    // 🔥 ALSO MARK FAILED ON ERROR
-    if (this.razorpayOrderId) {
-      await api.post(`/payment-failed/${this.razorpayOrderId}`);
-    }
-
-    showToast("Payment failed. Please try again.", "error");
+    showToast(
+      err.response?.data?.message ||
+      "Unable to place order. Please try again.",
+      "error"
+    );
   }
-}
-
+},
 
   },
 };
 </script>
 
-<style scoped>
-.strike {
-  text-decoration: line-through;
-  color: #888;
-}
 
-.green {
-  color: #2e7d32;
-}
-
-.bold {
-  font-weight: 700;
-}
-
-.original-price {
-  text-decoration: line-through;
-  color: red;
-  font-size: 14px;
-}
-
-.discounted-price {
-  color: #000;
-  font-weight: 600;
-  font-size: 18px;
-}
-
-/* Add a simple autocomplete style */
-.autocomplete-list {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  max-height: 200px;
-  overflow-y: auto;
-  background: white;
-  border: 1px solid #d1d1d1;
-  border-radius: 6px;
-  z-index: 10;
-  margin-top: 4px;
-}
-
-.autocomplete-list li {
-  padding: 10px;
-  cursor: pointer;
-}
-
-.autocomplete-list li:hover {
-  background-color: #f0f0f0;
-}
-
-/* Global Checkout Styles */
-.checkout-page {
-  min-height: 100vh;
-  background: #fafafa;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-}
-
-/* Header */
-.checkout-header {
-  background: white;
-  border-bottom: 1px solid #e5e5e5;
-  padding: 20px 40px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.logo img {
-  height: 32px;
-  width: auto;
-}
-
-.brand-name {
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  color: #333;
-}
-
-.cart-icon {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  color: #666;
-}
-
-/* Main Container */
-.checkout-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 40px 20px;
-  display: grid;
-  grid-template-columns: 1fr 480px;
-  gap: 80px;
-}
-
-/* Left Column - Form */
-.checkout-form {
-  max-width: 600px;
-}
-
-.form-section {
-  margin-bottom: 40px;
-  position: relative;
-}
-
-.section-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 20px;
-  color: #1a1a1a;
-}
-
-.sign-in-link {
-  position: absolute;
-  top: 0;
-  right: 0;
-  color: #2c6ecb;
-  text-decoration: none;
-  font-size: 14px;
-}
-
-.sign-in-link:hover {
-  text-decoration: underline;
-}
-
-/* Form Elements */
-.form-group {
-  margin-bottom: 16px;
-  position: relative;
-}
-
-.form-group.half {
-  flex: 1;
-}
-
-.form-row {
-  display: flex;
-  gap: 16px;
-}
-
-.form-row.three-col {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 16px;
-}
-
-.form-input,
-.form-select {
-  width: 100%;
-  padding: 14px 16px;
-  border: 1px solid #d1d1d1;
-  border-radius: 6px;
-  font-size: 14px;
-  background: white;
-  transition: all 0.2s;
-  font-family: inherit;
-}
-
-.form-input:focus,
-.form-select:focus {
-  outline: none;
-  border-color: #2c6ecb;
-  box-shadow: 0 0 0 2px rgba(44, 110, 203, 0.1);
-}
-
-.form-select {
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 16px center;
-  padding-right: 40px;
-}
-
-.search-group {
-  position: relative;
-}
-
-.search-icon,
-.info-icon {
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #666;
-}
-
-.checkbox-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.checkbox-group input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-}
-
-.checkbox-group label {
-  font-size: 14px;
-  color: #333;
-  cursor: pointer;
-}
-
-/* Shipping and Payment */
-.shipping-instruction,
-.payment-info {
-  font-size: 14px;
-  color: #666;
-  margin-top: 12px;
-}
-
-.payment-method {
-  margin-top: 16px;
-}
-
-.payment-option {
-  border: 1px solid #d1d1d1;
-  border-radius: 8px;
-  overflow: hidden;
-  background: white;
-}
-
-.payment-option.selected {
-  border-color: #2c6ecb;
-}
-
-.payment-header {
-  padding: 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: #f7f7f7;
-}
-
-.payment-header input[type="radio"] {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-}
-
-.payment-header label {
-  flex: 1;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.payment-logos {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.payment-logo {
-  height: 20px;
-  width: auto;
-}
-
-.more-options {
-  font-size: 12px;
-  color: #666;
-}
-
-.payment-notice {
-  padding: 16px;
-  font-size: 13px;
-  color: #666;
-  background: white;
-  margin: 0;
-}
-
-/* Billing Options */
-.billing-options {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.billing-option {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px;
-  border: 1px solid #d1d1d1;
-  border-radius: 6px;
-  cursor: pointer;
-  background: white;
-  transition: all 0.2s;
-}
-
-.billing-option:hover {
-  border-color: #2c6ecb;
-}
-
-.billing-option input[type="radio"] {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-}
-
-.billing-option label {
-  font-size: 14px;
-  cursor: pointer;
-  flex: 1;
-}
-
-/* Pay Button */
-.pay-now-btn {
-  width: 100%;
-  padding: 18px;
-  background: #1a1a1a;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-  margin-top: 24px;
-}
-
-.pay-now-btn:hover {
-  background: #000;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-/* Right Column - Order Summary */
-.order-summary {
-  background: #fafafa;
-}
-
-.summary-sticky {
-  position: sticky;
-  top: 20px;
-}
-
-.summary-items {
-  margin-bottom: 24px;
-}
-
-.summary-item {
-  display: flex;
-  gap: 16px;
-  padding: 16px 0;
-  border-bottom: 1px solid #e5e5e5;
-}
-
-.summary-item:first-child {
-  padding-top: 0;
-}
-
-.item-image-wrapper {
-  position: relative;
-  flex-shrink: 0;
-}
-
-.item-image {
-  width: 80px;
-  height: 80px;
-  object-fit: cover;
-  border-radius: 8px;
-  border: 1px solid #e5e5e5;
-}
-
-.item-quantity {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  background: #666;
-  color: white;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.item-details {
-  flex: 1;
-}
-
-.item-name {
-  font-size: 14px;
-  font-weight: 500;
-  margin: 0 0 6px 0;
-  color: #1a1a1a;
-}
-
-.item-variant {
-  font-size: 13px;
-  color: #666;
-  margin: 0;
-}
-
-.item-price {
-  font-size: 14px;
-  font-weight: 600;
-  color: #1a1a1a;
-}
-
-/* Discount Section */
-.discount-section {
-  margin-bottom: 24px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid #e5e5e5;
-}
-
-.discount-input-wrapper {
-  display: flex;
-  gap: 12px;
-}
-
-.discount-input {
-  flex: 1;
-  padding: 12px 16px;
-  border: 1px solid #d1d1d1;
-  border-radius: 6px;
-  font-size: 14px;
-}
-
-.discount-input:focus {
-  outline: none;
-  border-color: #2c6ecb;
-}
-
-.apply-btn {
-  padding: 12px 24px;
-  background: #f0f0f0;
-  border: 1px solid #d1d1d1;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.apply-btn:hover {
-  background: #e5e5e5;
-}
-
-/* Price Breakdown */
-.price-breakdown {
-  margin-bottom: 20px;
-}
-
-.price-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 0;
-  font-size: 14px;
-  color: #333;
-}
-
-.info-icon-inline {
-  margin-left: 4px;
-  color: #999;
-}
-
-/* Total */
-.total-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 20px 0;
-  border-top: 1px solid #e5e5e5;
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.total-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.currency {
-  font-size: 12px;
-  color: #666;
-  font-weight: 400;
-}
-
-.total-amount {
-  color: #1a1a1a;
-}
-
-.total-services {
-  font-size: 13px;
-  color: #666;
-  margin-top: -10px;
-}
-
-/* Footer */
-.checkout-footer {
-  border-top: 1px solid #e5e5e5;
-  padding: 24px 40px;
-  background: white;
-  margin-top: 60px;
-}
-
-.footer-links {
-  display: flex;
-  gap: 24px;
-  justify-content: center;
-}
-
-.footer-links a {
-  font-size: 13px;
-  color: #666;
-  text-decoration: none;
-}
-
-.footer-links a:hover {
-  color: #2c6ecb;
-  text-decoration: underline;
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .checkout-container {
-    grid-template-columns: 1fr;
-    gap: 40px;
-  }
-
-  .order-summary {
-    order: -1;
-  }
-
-  .summary-sticky {
-    position: relative;
-    top: 0;
-  }
-}
-
-@media (max-width: 640px) {
-  .checkout-header {
-    padding: 16px 20px;
-  }
-
-  .checkout-container {
-    padding: 24px 16px;
-  }
-
-  .form-row.three-col {
-    grid-template-columns: 1fr;
-  }
-
-  .checkout-footer {
-    padding: 20px 16px;
-  }
-
-  .footer-links {
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-  }
-}
-</style>

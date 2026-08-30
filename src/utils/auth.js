@@ -1,5 +1,5 @@
 import { jwtDecode } from "jwt-decode";
-import router from "@/router";
+import router from "@/components/index";
 
 let logoutTimer; // IMPORTANT
 

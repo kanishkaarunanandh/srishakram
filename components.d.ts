@@ -14,7 +14,7 @@ declare module 'vue' {
     Collection: typeof import('./src/components/collection.vue')['default']
     ComingSoon: typeof import('./src/components/ComingSoon.vue')['default']
     Contact: typeof import('./src/components/contact.vue')['default']
-    Hexpalette: typeof import('./src/components/hexpalette.vue')['default']
+    Hexpalette: typeof import('./src/temp/hexpalette.vue/index.js')['default']
     Homepg: typeof import('./src/components/homepg.vue')['default']
     OAuthSuccess: typeof import('./src/components/OAuthSuccess.vue')['default']
     OrderDetails: typeof import('./src/components/OrderDetails.vue')['default']

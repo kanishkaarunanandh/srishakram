@@ -131,8 +131,10 @@
   </v-app>
 </template>
 
+<style scoped src=""></style>
 <script>
 import api from "./axios.js";
+import '@/adminfolder/admin styles/add_product.css';
 
 export default {
   data() {
@@ -311,79 +313,4 @@ export default {
 </script>
 
 
-<style scoped>
-.selected-btn {
-  background-color: #a07547;
-  color: white;
-}
 
-.unselected-btn {
-  background-color: white;
-  color: #a07547;
-  border: 2px solid #a07547;
-}
-
-.upload-card {
-  width: 100%;
-}
-
-.upload-box {
-  border: 2px dashed #a07547;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 320px;
-  height: 300px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-}
-
-.small-box {
-  width: 100px;
-  height: 100px;
-}
-
-.upload-text {
-  text-align: center;
-  color: #a07547;
-  font-weight: 600;
-}
-
-.preview-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 12px;
-}
-
-.thumbnail-box {
-  position: relative;
-  width: 100px;
-  height: 100px;
-  border: 2px solid #a07547;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 10px;
-}
-
-.thumbnail-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.remove-icon {
-  position: absolute;
-
-  right: 2px;
-  color: red;
-  cursor: pointer;
-  background: white;
-  border-radius: 50%;
-}
-
-.text-brown {
-  color: #a07547;
-}
-</style>

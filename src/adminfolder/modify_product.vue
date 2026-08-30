@@ -9,7 +9,7 @@
         sm="6"
         md="3"
       >
-        <v-card class="product-card position-relative">
+        <v-card class="modifyproduct-card position-relative">
   
   <!-- DELETE ICON -->
   <v-icon
@@ -215,15 +215,17 @@
   </div>
 </template>
 
+<style scoped src=""></style>
 <script>
 import api from "@/adminfolder/axios"
 import { resolveMediaUrl } from "@/utils/mediaUrl";
+import '@/adminfolder/admin styles/modifyProduct.css'
 
 export default {
   data() {
     return {
       uploading: false,
-      host: "https://srishakram-backend-v2.onrender.com",
+      host: "http://localhost:8080",
       imgs: [],
       dialog: false,
 
@@ -480,95 +482,3 @@ async deleteProduct() {
 };
 </script>
 
-<style scoped>
-.delete-icon {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: white;
-  color: red;
-  border-radius: 50%;
-  padding: 5px;
-  cursor: pointer;
-  z-index: 10;
-}
-.product-card {
-  border: 2px solid maroon;
-  border-radius: 16px;
-  cursor: pointer;
-  margin-bottom:50px;
-}
-
-.edit-card {
-  border: 2px solid maroon;
-  border-radius: 14px;
-}
-
-.title {
-  color: maroon;
-  font-weight: 700;
-}
-
-.selected-btn {
-  background: maroon;
-  color: white;
-}
-
-.unselected-btn {
-  border: 2px solid maroon;
-  color: maroon;
-}
-
-.no-image {
-  height: 300px;
-  border: 2px dashed marron;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.upload-box {
-  border: 2px dashed maroon;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 320px;
-  height: 300px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-}
-
-.small-box {
-  width: 100px;
-  height: 100px;
-  margin-left: 10px;
-}
-
-.thumbnail-box {
-  position: relative;
-  width: 100px;
-  height: 100px;
-  border: 2px solid maroon;
-  border-radius: 12px;
-  overflow: hidden;
-  margin-left: 10px;
-}
-
-.thumbnail-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  
-}
-
-.remove-icon {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  color: red;
-  cursor: pointer;
-  background: white;
-  border-radius: 50%;
-}
-</style>

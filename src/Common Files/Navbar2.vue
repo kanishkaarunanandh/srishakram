@@ -38,6 +38,7 @@
   </div>
 </template>
 
+<style scoped src=""></style>
 <script>
 export default {
   name: "Navbar2",

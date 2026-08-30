@@ -165,8 +165,10 @@
   </v-container>
 </template>
 
+<style scoped src="@/components/stylesheets/order_status.css"></style>
 <script>
 import axios from "axios"
+
 
 export default {
   data() {
@@ -186,7 +188,7 @@ export default {
       this.loading = true
       
       axios
-        .get(`https://srishakram-backend-v2.onrender.com/orders/customer/${this.customerId}`)
+        .get(`http://localhost:8080/orders/customer/${this.customerId}`)
         .then(res => {
           this.orders = res.data.sort((a, b) => b.orderId - a.orderId) // Sort by newest first
         })
@@ -291,116 +293,3 @@ export default {
 }
 </script>
 
-<style scoped>
-.orders-container {
-  background: #fafafa;
-  min-height: 60vh;
-  margin-top: 35px;
-  margin-bottom: 35px;
-  width: 90%;
-}
-
-.page-header {
-  padding: 0 4px;
-}
-
-.order-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  background: white;
-  transition: all 0.2s ease;
-  width: 100%;
-}
-
-.order-card:hover {
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-}
-
-.cancelled-order {
-  opacity: 0.7;
-  background: #fafafa;
-}
-
-.order-card-header {
-  background: #f9f9f9;
-}
-
-.order-items {
-  background: white;
-}
-
-.order-item {
-  padding: 8px 0;
-}
-
-.item-image-wrapper {
-  width: 60px;
-  height: 60px;
-  min-width: 60px;
-  border-radius: 6px;
-  overflow: hidden;
-  background: #f5f5f5;
-  border: 1px solid #e0e0e0;
-}
-
-.item-image {
-  width: 100%;
-  height: 100%;
-}
-
-.item-name {
-  color: #212121;
-  line-height: 1.4;
-}
-
-.item-meta {
-  color: #757575;
-}
-
-.item-price {
-  color: #212121;
-  min-width: 100px;
-  text-align: right;
-}
-
-.order-actions {
-  background: #fafafa;
-}
-
-.empty-state {
-  margin-top: 60px;
-}
-
-/* Responsive */
-@media (max-width: 600px) {
-  .item-image-wrapper {
-    width: 50px;
-    height: 50px;
-    min-width: 50px;
-  }
-
-  .item-price {
-    min-width: auto;
-    margin-top: 8px;
-    width: 100%;
-    text-align: left;
-  }
-
-  .order-item .d-flex {
-    flex-wrap: wrap;
-  }
-
-  .order-actions .d-flex {
-    flex-direction: column;
-  }
-
-  .order-actions .v-btn {
-    width: 100%;
-    margin-bottom: 8px;
-  }
-
-  .order-actions .v-btn:last-child {
-    margin-bottom: 0;
-  }
-}
-</style>

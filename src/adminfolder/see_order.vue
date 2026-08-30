@@ -162,8 +162,10 @@
   </v-container>
 </template>
 
+<style scoped src=""></style>
 <script>
 import axios from "axios";
+import '@/adminfolder/admin styles/seeOrders.css';
 
 export default {
   name: "AdminOrderDetails",
@@ -213,7 +215,7 @@ export default {
 
       try {
         const response = await axios.get(
-          `https://srishakram-backend-v2.onrender.com/orders/${orderId}`
+          `http://localhost:8080/orders/${orderId}`
         );
 
         this.order = response.data;
@@ -258,14 +260,3 @@ export default {
 };
 </script>
 
-<style scoped>
-.order-bg {
-  background: linear-gradient(135deg, #f5f7fa, #e4e8f0);
-  min-height: 100vh;
-}
-
-.v-data-table tr:hover {
-  background-color: #f3f6ff !important;
-  transition: 0.3s;
-}
-</style>

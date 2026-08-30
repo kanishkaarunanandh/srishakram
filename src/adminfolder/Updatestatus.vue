@@ -117,9 +117,11 @@
   </v-app>
 </template>
 
+
 <script>
 import api from '@/adminfolder/axios.js'
 import axios from 'axios'
+
 
 export default {
   props: {
@@ -183,7 +185,7 @@ export default {
   methods: {
     // Load order details to get refund status and payment method
     loadOrderDetails() {
-      axios.get(`https://srishakram-backend-v2.onrender.com/orders/${this.id}`)
+      axios.get(`http://localhost:8080/orders/${this.id}`)
         .then(res => {
           const normalizedStatus = res.data.orderStatus?.toUpperCase() || "";
           this.orderRefundStatus = normalizedStatus === "REFUND COMPLETED" 
@@ -276,9 +278,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-.v-timeline {
-  padding-top: 0;
-}
-</style>

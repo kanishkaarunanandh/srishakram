@@ -396,8 +396,10 @@
   </v-container>
 </template>
 
+<style scoped src=""></style>
 <script>
 import axios from "axios";
+import '@/adminfolder/admin styles/orders.css'
 
 export default {
   name: "AdminOrders",
@@ -443,7 +445,7 @@ export default {
       this.loading = true;
 
       axios
-        .get("https://srishakram-backend-v2.onrender.com/orders")
+        .get("http://localhost:8080/orders")
         .then((res) => {
           this.orders = res.data;
         })
@@ -510,7 +512,7 @@ export default {
       this.deleteLoading = true;
 
       axios
-        .delete(`https://srishakram-backend-v2.onrender.com/orders/${this.orderToDelete.orderId}`)
+        .delete(`http://localhost:8080/orders/${this.orderToDelete.orderId}`)
         .then(() => {
           this.orders = this.orders.filter(order => order.orderId !== this.orderToDelete.orderId);
           this.showSnackbar("Order deleted successfully", "success");
@@ -577,7 +579,7 @@ export default {
       this.refundLoading = true;
 
       axios
-        .put(`https://srishakram-backend-v2.onrender.com/orders/${this.selectedOrder.orderId}/status` , {
+        .put(`http://localhost:8080/orders/${this.selectedOrder.orderId}/status` , {
           status: "REFUND COMPLETED"
         })
         .then(() => {
@@ -618,7 +620,7 @@ export default {
       this.acceptLoading = true;
 
       axios
-        .put(`https://srishakram-backend-v2.onrender.com/orders/${this.selectedCancellationOrder.orderId}/approve-cancel`)
+        .put(`http://localhost:8080/orders/${this.selectedCancellationOrder.orderId}/approve-cancel`)
         .then(() => {
           // Update the order in the local array
           const index = this.orders.findIndex(o => o.orderId === this.selectedCancellationOrder.orderId);
@@ -645,7 +647,7 @@ export default {
       this.rejectLoading = true;
 
       axios
-        .put(`https://srishakram-backend-v2.onrender.com/orders/${this.selectedCancellationOrder.orderId}/reject-cancel`)
+        .put(`http://localhost:8080/orders/${this.selectedCancellationOrder.orderId}/reject-cancel`)
         .then((res) => {
           // Update the order in the local array to its previous status
           const index = this.orders.findIndex(o => o.orderId === this.selectedCancellationOrder.orderId);
@@ -676,8 +678,3 @@ export default {
 };
 </script>
 
-<style scoped>
-.v-data-table >>> tbody tr:hover {
-  background-color: #f5f5f5 !important;
-}
-</style>

@@ -1,21 +1,22 @@
-const BACKEND_ORIGIN = "https://srishakram-backend-v2.onrender.com";
+const BACKEND_URL = "http://localhost:8080";
 
-export function resolveMediaUrl(value) {
-  if (!value) return "";
+export function resolveMediaUrl(path) {
+  if (!path) return "";
 
-  const path = String(value)
-    .trim()
-    .replace("issimg .s3", "issimg.s3")
-    .replace("issimg%20.s3", "issimg.s3");
-
-  if (/^(https?:|blob:|data:)/i.test(path)) {
-    return encodeURI(path);
+  // Already a complete URL
+  if (
+    path.startsWith("http://") ||
+    path.startsWith("https://") ||
+    path.startsWith("data:") ||
+    path.startsWith("blob:")
+  ) {
+    return path;
   }
 
-  const cleanPath = path.replace(/^\/+/, "");
-  const mediaPath = cleanPath.includes("/")
-    ? cleanPath
-    : `demo-media/${cleanPath}`;
+  // Backend relative path
+  if (path.startsWith("/")) {
+    return `${BACKEND_URL}${path}`;
+  }
 
-  return encodeURI(`${BACKEND_ORIGIN}/${mediaPath}`);
+  return `${BACKEND_URL}/${path}`;
 }

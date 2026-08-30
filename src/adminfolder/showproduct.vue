@@ -300,22 +300,33 @@
             </div>
         </div>
 </template>
+<style scoped src="@/adminfolder/admin styles/showproduct.css"></style>
 
+<style scoped src=""></style>
 <script>
 import { resolveMediaUrl } from '@/utils/mediaUrl'
 import api from "./axios.js";
 import { showToast } from '@/utils/toast';
+import { demoProducts } from "@/data/demoProducts";
+
 
 const createEmptyProduct = () => ({
+    id: null,
+    productId: null,
     title: "",
     img: "",
     images: [],
     category: "",
+    subcategory: "",
     price: 0,
+    offer_price: 0,
     blouselength: "",
     sareelength: "",
     color: "",
     weight: "",
+    instock: false,
+    newArrival: false,
+
     features: {
         length: 0,
         blouselength: 0,
@@ -323,6 +334,7 @@ const createEmptyProduct = () => ({
         weight: 0,
         sareelength: 0,
     },
+
     description: "",
     shippingInfo: "",
     returnPolicy: "",
@@ -332,110 +344,192 @@ const SITE_URL = "https://srishakram-frontend-v2.vercel.app";
 
 export default {
     name: "ProductDetails",
+
     props: {
         id: {
-            type: Number,
-            required: true,
+            type: [Number, String],
+            required: false,
         },
     },
+
     data() {
         return {
             product: createEmptyProduct(),
+
             loadingProduct: false,
             productError: "",
+
             selectedImage: null,
+
             quantity: 1,
+
             recentProducts: [],
-            products: [],
+
+            // Static products available immediately
+            products: [...demoProducts],
+
+            backendAvailable: false,
+
             isBlurred: false,
             blurTimer: null,
+
             loadingProductId: null,
             productRequestController: null,
             productRequestKey: 0
-
         };
     },
+
     computed: {
         containerStyle() {
-            return this.$vuetify.display.mobile 
-                ? 'width: 100%; padding: 16px;' 
+            return this.$vuetify.display.mobile
+                ? 'width: 100%; padding: 16px;'
                 : 'width: 90%; margin-left: 4%;';
         },
+
         mainImageHeight() {
             return this.$vuetify.display.mobile ? 400 : 600;
         },
+
         thumbnailSize() {
             return this.$vuetify.display.mobile ? 80 : 100;
         },
+
         currentProductId() {
-            return String(this.$route.params.id || this.id || "");
+            return String(
+                this.$route.params.id ||
+                this.id ||
+                ""
+            );
         }
     },
+
     watch: {
         '$route.params.id': {
             immediate: true,
+
             handler(newId) {
                 this.loadProduct(newId);
             }
         },
+
         selectedImage(newImage) {
             if (this.loadingProduct) {
                 return;
             }
 
-            if (!this.loadingProduct && newImage) {
+            if (newImage) {
                 this.preloadImage(newImage);
             }
+
             this.startBlurTimer();
         }
     },
+
     beforeUnmount() {
         this.clearBlurTimer();
         this.productRequestController?.abort();
-},
-    methods: {
-            getImageUrl(path) {
-      return resolveMediaUrl(path);
     },
-        getProducts() {
-            api.get('/upload/recent')
-                .then((res) => {
-                    this.products = res.data
-                })
-                .catch((error) => {
-                    console.log(error)
-                })
+
+    methods: {
+        /*
+         * MEDIA URL
+         */
+        getImageUrl(path) {
+    if (!path) return "";
+
+    if (
+        path.startsWith("http") ||
+        path.startsWith("/") ||
+        path.startsWith("data:")
+    ) {
+        return path;
+    }
+
+    return resolveMediaUrl(path);
+},
+
+        async getProducts() {
+            this.products = [...demoProducts];
+
+            try {
+                const res = await api.get('/upload/recent');
+
+                if (
+                    Array.isArray(res.data) &&
+                    res.data.length
+                ) {
+                    this.products = res.data;
+                    this.backendAvailable = true;
+
+                    console.log("Backend products loaded");
+                }
+
+            } catch (error) {
+                console.log(
+                    "Backend unavailable. Using static demo products."
+                );
+
+                this.products = [...demoProducts];
+                this.backendAvailable = false;
+            }
         },
+
+        /*
+         * CLEAR BLUR
+         */
         clearBlurTimer() {
             if (this.blurTimer) {
                 clearTimeout(this.blurTimer);
                 this.blurTimer = null;
             }
+
             this.isBlurred = false;
         },
+
+        /*
+         * RESET PRODUCT
+         */
         resetProductState() {
             this.clearBlurTimer();
+
             this.selectedImage = null;
+
             this.quantity = 1;
+
             this.product = createEmptyProduct();
+
             this.productError = "";
         },
+
+        /*
+         * SELECT THUMBNAIL
+         */
         setSelectedImage(img) {
-            if (this.loadingProduct) return;
+            if (this.loadingProduct) {
+                return;
+            }
+
             this.selectedImage = img;
         },
+
+        /*
+         * BLUR TIMER
+         */
         startBlurTimer() {
-  // Clear old timer
-  if (this.blurTimer) {
-    clearTimeout(this.blurTimer);
-  }
+            if (this.blurTimer) {
+                clearTimeout(this.blurTimer);
+            }
 
-  this.isBlurred = false;
+            this.isBlurred = false;
 
-  this.blurTimer = setTimeout(() => {
-    this.isBlurred = true;
-  }, 60000); 
-},
+            this.blurTimer = setTimeout(() => {
+                this.isBlurred = true;
+            }, 60000);
+        },
+
+        /*
+         * PRELOAD IMAGE
+         */
         preloadImage(path) {
             const imageUrl = this.getImageUrl(path);
 
@@ -445,805 +539,742 @@ export default {
 
             return new Promise((resolve) => {
                 const img = new Image();
+
                 img.onload = resolve;
                 img.onerror = resolve;
+
                 img.src = imageUrl;
             });
         },
+
+        /*
+         * FIND STATIC PRODUCT
+         */
+        findDemoProduct(productId) {
+            return demoProducts.find(product =>
+                String(product.id) === String(productId) ||
+                String(product.productId) === String(productId)
+            );
+        },
+
+        /*
+         * NORMALIZE PRODUCT
+         */
+        normalizeProduct(productData) {
+            if (!productData) {
+                return createEmptyProduct();
+            }
+
+            return {
+                ...createEmptyProduct(),
+                ...productData,
+
+                id:
+                    productData.id ||
+                    productData.productId,
+
+                productId:
+                    productData.productId ||
+                    productData.id,
+
+                images:
+                    Array.isArray(productData.images) &&
+                    productData.images.length
+                        ? productData.images
+                        : productData.img
+                            ? [productData.img]
+                            : []
+            };
+        },
+
+        /*
+         * META TAG
+         */
         setMetaTag(selector, attribute, value) {
-            let element = document.head.querySelector(selector);
+            let element =
+                document.head.querySelector(selector);
 
             if (!element) {
-                element = document.createElement("meta");
-                const match = selector.match(/\[(name|property)="([^"]+)"\]/);
-                if (match) element.setAttribute(match[1], match[2]);
+                element =
+                    document.createElement("meta");
+
+                const match =
+                    selector.match(
+                        /\[(name|property)="([^"]+)"\]/
+                    );
+
+                if (match) {
+                    element.setAttribute(
+                        match[1],
+                        match[2]
+                    );
+                }
+
                 document.head.appendChild(element);
             }
 
-            element.setAttribute(attribute, value);
+            element.setAttribute(
+                attribute,
+                value
+            );
         },
+
+        /*
+         * CANONICAL URL
+         */
         setProductCanonical(productId) {
-            let canonical = document.head.querySelector('link[rel="canonical"]');
+            let canonical =
+                document.head.querySelector(
+                    'link[rel="canonical"]'
+                );
 
             if (!canonical) {
-                canonical = document.createElement("link");
-                canonical.setAttribute("rel", "canonical");
-                document.head.appendChild(canonical);
+                canonical =
+                    document.createElement("link");
+
+                canonical.setAttribute(
+                    "rel",
+                    "canonical"
+                );
+
+                document.head.appendChild(
+                    canonical
+                );
             }
 
-            canonical.setAttribute("href", `${SITE_URL}/product/${productId}`);
+            canonical.setAttribute(
+                "href",
+                `${SITE_URL}/product/${productId}`
+            );
         },
+
+        /*
+         * PRODUCT SEO
+         */
         updateProductSeo(product, productId) {
-            const productName = product.title || "Silk Saree";
-            const title = `${productName} | Sri Shakram`;
-            const description = `${productName} from Sri Shakram Silks. Explore Kanchipuram silk sarees, traditional silk sarees, pure silk sarees, bridal sarees, and zari collections.`;
-            const imageUrl = this.getImageUrl(product.img) || `${SITE_URL}/logo.png`;
-            const productUrl = `${SITE_URL}/product/${productId}`;
+            const productName =
+                product.title ||
+                "Silk Saree";
+
+            const title =
+                `${productName} | Sri Shakram`;
+
+            const description =
+                `${productName} from Sri Shakram Silks. Explore Kanchipuram silk sarees, traditional silk sarees, pure silk sarees, bridal sarees, and zari collections.`;
+
+            const imageUrl =
+                this.getImageUrl(product.img) ||
+                `${SITE_URL}/logo.png`;
+
+            const productUrl =
+                `${SITE_URL}/product/${productId}`;
 
             document.title = title;
-            this.setMetaTag('meta[name="description"]', "content", description);
-            this.setMetaTag('meta[name="keywords"]', "content", `${productName}, Sri Shakram, Sri Shakram Silks, Sri Chakram Saree, Kanchipuram Silk Sarees, Traditional Silk Sarees, Pure Silk Sarees`);
-            this.setMetaTag('meta[property="og:title"]', "content", title);
-            this.setMetaTag('meta[property="og:description"]', "content", description);
-            this.setMetaTag('meta[property="og:url"]', "content", productUrl);
-            this.setMetaTag('meta[property="og:image"]', "content", imageUrl);
-            this.setMetaTag('meta[name="twitter:title"]', "content", title);
-            this.setMetaTag('meta[name="twitter:description"]', "content", description);
-            this.setMetaTag('meta[name="twitter:image"]', "content", imageUrl);
+
+            this.setMetaTag(
+                'meta[name="description"]',
+                "content",
+                description
+            );
+
+            this.setMetaTag(
+                'meta[name="keywords"]',
+                "content",
+                `${productName}, Sri Shakram, Sri Shakram Silks, Kanchipuram Silk Sarees, Traditional Silk Sarees`
+            );
+
+            this.setMetaTag(
+                'meta[property="og:title"]',
+                "content",
+                title
+            );
+
+            this.setMetaTag(
+                'meta[property="og:description"]',
+                "content",
+                description
+            );
+
+            this.setMetaTag(
+                'meta[property="og:url"]',
+                "content",
+                productUrl
+            );
+
+            this.setMetaTag(
+                'meta[property="og:image"]',
+                "content",
+                imageUrl
+            );
+
+            this.setMetaTag(
+                'meta[name="twitter:title"]',
+                "content",
+                title
+            );
+
+            this.setMetaTag(
+                'meta[name="twitter:description"]',
+                "content",
+                description
+            );
+
+            this.setMetaTag(
+                'meta[name="twitter:image"]',
+                "content",
+                imageUrl
+            );
+
             this.setProductCanonical(productId);
 
-            const existingSchema = document.getElementById("product-json-ld");
+            const existingSchema =
+                document.getElementById(
+                    "product-json-ld"
+                );
+
             if (existingSchema) {
                 existingSchema.remove();
             }
 
-            const schema = document.createElement("script");
-            schema.id = "product-json-ld";
-            schema.type = "application/ld+json";
-            schema.textContent = JSON.stringify({
-                "@context": "https://schema.org",
-                "@type": "Product",
-                name: productName,
-                image: imageUrl,
-                description,
-                brand: {
-                    "@type": "Brand",
-                    name: "Sri Shakram Silks"
-                },
-                category: product.category || "Kanchipuram Silk Sarees",
-                offers: {
-                    "@type": "Offer",
-                    priceCurrency: "INR",
-                    price: product.price || undefined,
-                    availability: "https://schema.org/InStock",
-                    url: productUrl
-                }
-            });
+            const schema =
+                document.createElement("script");
+
+            schema.id =
+                "product-json-ld";
+
+            schema.type =
+                "application/ld+json";
+
+            schema.textContent =
+                JSON.stringify({
+                    "@context":
+                        "https://schema.org",
+
+                    "@type":
+                        "Product",
+
+                    name:
+                        productName,
+
+                    image:
+                        imageUrl,
+
+                    description,
+
+                    brand: {
+                        "@type":
+                            "Brand",
+
+                        name:
+                            "Sri Shakram Silks"
+                    },
+
+                    category:
+                        product.category ||
+                        "Kanchipuram Silk Sarees",
+
+                    offers: {
+                        "@type":
+                            "Offer",
+
+                        priceCurrency:
+                            "INR",
+
+                        price:
+                            product.price ||
+                            undefined,
+
+                        availability:
+                            product.instock
+                                ? "https://schema.org/InStock"
+                                : "https://schema.org/OutOfStock",
+
+                        url:
+                            productUrl
+                    }
+                });
+
             document.head.appendChild(schema);
         },
-        scrollToProductTop(behavior = "smooth") {
-            window.scrollTo({ top: 0, behavior });
-        },
-        goToProduct(productId) {
-            const nextId = String(productId);
 
-            if (!nextId || nextId === this.currentProductId) {
+        /*
+         * SCROLL TOP
+         */
+        scrollToProductTop(
+            behavior = "smooth"
+        ) {
+            window.scrollTo({
+                top: 0,
+                behavior
+            });
+        },
+
+        /*
+         * NAVIGATE TO PRODUCT
+         */
+        goToProduct(productId) {
+            const nextId =
+                String(productId);
+
+            if (
+                !nextId ||
+                nextId === this.currentProductId
+            ) {
                 return;
             }
 
             this.resetProductState();
+
             this.loadingProduct = true;
+
             this.scrollToProductTop();
-            this.$router.push(`/product/${nextId}`);
+
+            this.$router.push(
+                `/product/${nextId}`
+            );
         },
 
+        /*
+         * ADD TO CART
+         */
         addToCart() {
-            const token = localStorage.getItem("token");
+            const token =
+                localStorage.getItem("token");
+
             if (!token) {
-                showToast("Please login to continue", "warning");
-                this.$router.push("/login/account");
+                showToast(
+                    "Please login to continue",
+                    "warning"
+                );
+
+                this.$router.push(
+                    "/login/account"
+                );
+
                 return;
             }
 
             const cartItem = {
-                productId: this.currentProductId,
-                quantity: this.quantity
+                productId:
+                    this.product.id ||
+                    this.product.productId ||
+                    this.currentProductId,
+
+                quantity:
+                    this.quantity
             };
 
-            api.post("/cart", cartItem, {
-                headers: {
-                    Authorization: `Bearer ${token}`
+            api.post(
+                "/cart",
+                cartItem,
+                {
+                    headers: {
+                        Authorization:
+                            `Bearer ${token}`
+                    }
                 }
-            })
-            .then(() => {
-                showToast("Product added to cart", "success");
-            })
-            .catch(err => {
-                console.error("Cart save failed", err);
-                showToast("Something went wrong. Please try again.", "error");
-            });
+            )
+                .then(() => {
+                    showToast(
+                        "Product added to cart",
+                        "success"
+                    );
+                })
+
+                .catch(err => {
+                    console.error(
+                        "Cart save failed",
+                        err
+                    );
+
+                    showToast(
+                        "Backend is unavailable. Please try again shortly.",
+                        "error"
+                    );
+                });
         },
+
+        /*
+         * BUY NOW
+         */
         buyNow() {
-            const token = localStorage.getItem("token");
+            const token =
+                localStorage.getItem("token");
+
             if (!token) {
-                showToast("Please login to continue", "warning");
-                this.$router.push("/login/account");
+                showToast(
+                    "Please login to continue",
+                    "warning"
+                );
+
+                this.$router.push(
+                    "/login/account"
+                );
+
                 return;
             }
+
             const buyNowItem = {
-                productId: this.currentProductId,
-                productName: this.product.title,
-                price: this.product.price,
-                quantity: this.quantity,
-                image: this.product.img,
-                offer_price: this.product.offer_price || 0
+                productId:
+                    this.product.id ||
+                    this.product.productId ||
+                    this.currentProductId,
+
+                productName:
+                    this.product.title,
+
+                price:
+                    this.product.price,
+
+                quantity:
+                    this.quantity,
+
+                image:
+                    this.product.img,
+
+                offer_price:
+                    this.product.offer_price || 0
             };
 
-            sessionStorage.setItem("buyNowItem", JSON.stringify(buyNowItem));
-            this.$router.push("/checkout");
+            sessionStorage.setItem(
+                "buyNowItem",
+                JSON.stringify(
+                    buyNowItem
+                )
+            );
+
+            this.$router.push(
+                "/checkout"
+            );
         },
 
-        searchproduct(item) {
-            console.log(item);
-            this.$router.push({
-                name: "Collection",
-                params: { category: item },
-            });
-        },
-
-        // 🔹 SAVE PRODUCT ID
+        /*
+         * SAVE RECENT PRODUCT
+         */
         addToRecentlyViewed(productId) {
-            let viewed = JSON.parse(localStorage.getItem("recentlyViewed")) || [];
+            let viewed =
+                JSON.parse(
+                    localStorage.getItem(
+                        "recentlyViewed"
+                    )
+                ) || [];
 
-            // Remove duplicate
-            viewed = viewed.filter(id => String(id) !== String(productId));
+            viewed =
+                viewed.filter(
+                    id =>
+                        String(id) !==
+                        String(productId)
+                );
 
-            // Add to front
-            viewed.unshift(productId);
+            viewed.unshift(
+                productId
+            );
 
-            // Keep only last 5
-            viewed = viewed.slice(0, 6);
+            viewed =
+                viewed.slice(
+                    0,
+                    6
+                );
 
-            localStorage.setItem("recentlyViewed", JSON.stringify(viewed));
+            localStorage.setItem(
+                "recentlyViewed",
+                JSON.stringify(
+                    viewed
+                )
+            );
         },
 
-        // 🔹 FETCH PRODUCTS
-        fetchRecentlyViewed() {
-            const viewed = JSON.parse(localStorage.getItem("recentlyViewed")) || [];
+        /*
+         * FETCH RECENT PRODUCTS
+         */
+        async fetchRecentlyViewed() {
+            const viewed =
+                JSON.parse(
+                    localStorage.getItem(
+                        "recentlyViewed"
+                    )
+                ) || [];
 
-            // Remove current product
-            const filtered = viewed.filter(id => String(id) !== this.currentProductId);
+            const filtered =
+                viewed.filter(
+                    id =>
+                        String(id) !==
+                        this.currentProductId
+                );
 
             if (!filtered.length) {
                 this.recentProducts = [];
                 return;
             }
 
-            Promise.all(
-                filtered.map(id => api.get(`/upload/products/${id}`))
-            ).then(responses => {
-                this.recentProducts = responses.map(r => r.data);
-            }).catch((err) => {
-                console.error("Recent products load failed:", err);
-            });
+            // Static products first
+            this.recentProducts =
+                filtered
+                    .map(id =>
+                        this.findDemoProduct(id)
+                    )
+                    .filter(Boolean)
+                    .map(product =>
+                        this.normalizeProduct(product)
+                    );
+
+            // Try backend
+            try {
+                const responses =
+                    await Promise.all(
+                        filtered.map(
+                            id =>
+                                api.get(
+                                    `/upload/products/${id}`
+                                )
+                        )
+                    );
+
+                const backendProducts =
+                    responses
+                        .map(
+                            response =>
+                                response.data
+                        )
+                        .filter(Boolean)
+                        .map(
+                            product =>
+                                this.normalizeProduct(
+                                    product
+                                )
+                        );
+
+                if (
+                    backendProducts.length
+                ) {
+                    this.recentProducts =
+                        backendProducts;
+                }
+
+            } catch (error) {
+                console.log(
+                    "Using static recently viewed products."
+                );
+            }
         },
+
+        /*
+         * LOAD PRODUCT
+         */
         async loadProduct(id) {
-            const productId = String(id || "");
+            const productId =
+                String(id || "");
 
             if (!productId) {
                 this.resetProductState();
-                this.productError = "Product not found.";
+
+                this.productError =
+                    "Product not found.";
+
                 return;
             }
 
-            if (this.loadingProduct && this.loadingProductId === productId) {
+            if (
+                this.loadingProduct &&
+                this.loadingProductId ===
+                productId
+            ) {
                 return;
             }
 
+            // Cancel previous request
             this.productRequestController?.abort();
-            const requestController = new AbortController();
-            const requestKey = this.productRequestKey + 1;
-            this.productRequestController = requestController;
-            this.productRequestKey = requestKey;
-            this.loadingProductId = productId;
-            this.loadingProduct = true;
+
+            const requestController =
+                new AbortController();
+
+            const requestKey =
+                this.productRequestKey + 1;
+
+            this.productRequestController =
+                requestController;
+
+            this.productRequestKey =
+                requestKey;
+
+            this.loadingProductId =
+                productId;
+
             this.resetProductState();
 
+            /*
+             * STEP 1
+             * LOAD STATIC PRODUCT
+             */
+            const demoProduct =
+                this.findDemoProduct(
+                    productId
+                );
+
+            if (demoProduct) {
+                const normalizedDemoProduct =
+                    this.normalizeProduct(
+                        demoProduct
+                    );
+
+                this.product =
+                    normalizedDemoProduct;
+
+                this.loadingProduct =
+                    false;
+
+                this.productError =
+                    "";
+
+                this.preloadImage(
+                    normalizedDemoProduct.img
+                );
+
+                this.addToRecentlyViewed(
+                    productId
+                );
+
+                this.fetchRecentlyViewed();
+
+                this.updateProductSeo(
+                    normalizedDemoProduct,
+                    productId
+                );
+
+            } else {
+                // No static product, show loader
+                this.loadingProduct =
+                    true;
+            }
+
+            /*
+             * STEP 2
+             * TRY BACKEND
+             */
             try {
-                const res = await api.get(`/upload/products/${productId}`, {
-                    signal: requestController.signal,
-                });
+                const res =
+                    await api.get(
+                        `/upload/products/${productId}`,
+                        {
+                            signal:
+                                requestController.signal
+                        }
+                    );
 
-                if (requestKey !== this.productRequestKey) {
+                if (
+                    requestKey !==
+                    this.productRequestKey
+                ) {
                     return;
                 }
 
-                const nextProduct = {
-                    ...createEmptyProduct(),
-                    ...res.data,
-                    images: Array.isArray(res.data?.images) ? res.data.images : [],
-                };
+                const backendProduct =
+                    this.normalizeProduct(
+                        res.data
+                    );
 
-                await this.preloadImage(nextProduct.img);
+                await this.preloadImage(
+                    backendProduct.img
+                );
 
-                if (requestKey !== this.productRequestKey) {
+                if (
+                    requestKey !==
+                    this.productRequestKey
+                ) {
                     return;
                 }
 
-                this.product = nextProduct;
-                this.selectedImage = null;
-                this.quantity = 1;
+                // Replace static product
+                this.product =
+                    backendProduct;
+
+                this.backendAvailable =
+                    true;
+
+                this.productError =
+                    "";
+
+                this.selectedImage =
+                    null;
+
+                this.quantity =
+                    1;
+
                 this.startBlurTimer();
 
-                // Save to recently viewed
-                this.addToRecentlyViewed(productId);
+                this.addToRecentlyViewed(
+                    productId
+                );
+
                 this.fetchRecentlyViewed();
-                this.updateProductSeo(nextProduct, productId);
+
+                this.updateProductSeo(
+                    backendProduct,
+                    productId
+                );
+
             } catch (err) {
-                if (err.name === "CanceledError" || err.code === "ERR_CANCELED") {
+
+                // Request cancelled
+                if (
+                    err.name === "CanceledError" ||
+                    err.code === "ERR_CANCELED"
+                ) {
                     return;
                 }
 
-                console.error("Error fetching product:", err);
-                this.productError = "Unable to load this product. Please try again.";
-                this.product = createEmptyProduct();
+                console.log(
+                    "Backend unavailable. Using static product."
+                );
+
+                this.backendAvailable =
+                    false;
+
+                // Keep static product
+                if (demoProduct) {
+                    this.product =
+                        this.normalizeProduct(
+                            demoProduct
+                        );
+
+                    this.productError =
+                        "";
+
+                    this.startBlurTimer();
+
+                } else {
+                    this.product =
+                        createEmptyProduct();
+
+                    this.productError =
+                        "Product not available.";
+                }
+
             } finally {
-                if (requestKey === this.productRequestKey) {
-                    this.loadingProduct = false;
-                    this.loadingProductId = null;
-                    this.productRequestController = null;
+
+                if (
+                    requestKey ===
+                    this.productRequestKey
+                ) {
+                    this.loadingProduct =
+                        false;
+
+                    this.loadingProductId =
+                        null;
+
+                    this.productRequestController =
+                        null;
                 }
             }
         }
     },
-    mounted() {
-        this.getProducts();
-    },
 
+    mounted() {
+        // Static products immediately
+        // Backend replaces if available
+        this.getProducts();
+    }
 };
 </script>
 
-<style>
-.product-details-page {
-  position: relative;
-  box-sizing: border-box;
-}
 
-.main-image-wrapper {
-  position: relative;
-  overflow: hidden;
-  border-radius: 4px;
-  max-width: 100%;
-}
-
-.blurred {
-  filter: blur(8px);
-  transition: filter 0.5s ease;
-}
-
-.skeleton-block,
-.skeleton-line {
-    background: linear-gradient(90deg, #f1eeee 25%, #faf8f6 40%, #f1eeee 65%);
-    background-size: 220% 100%;
-    animation: product-skeleton-loading 1.2s ease-in-out infinite;
-}
-
-.main-image-skeleton {
-    width: 100%;
-    border-radius: inherit;
-}
-
-.thumbnail-skeleton {
-    flex-shrink: 0;
-    border-radius: 4px;
-}
-
-.product-loading-info {
-    padding-top: 2px;
-}
-
-.skeleton-line {
-    border-radius: 999px;
-    height: 14px;
-    margin-bottom: 14px;
-}
-
-.skeleton-line-small {
-    width: 48%;
-    height: 12px;
-}
-
-.skeleton-title {
-    width: 86%;
-    height: 42px;
-    border-radius: 6px;
-}
-
-.skeleton-price {
-    width: 54%;
-    height: 18px;
-}
-
-.product-error {
-    color: #8a1f12;
-    font-size: 13px;
-    margin: 8px 0 0;
-}
-
-@keyframes product-skeleton-loading {
-    0% {
-        background-position: 100% 0;
-    }
-
-    100% {
-        background-position: -100% 0;
-    }
-}
-
-.quantity-label {
-    font-size: 12px;
-    letter-spacing: 2px;
-    margin-bottom: 8px;
-}
-
-.quantity-box {
-    display: flex !important;
-    align-items: center !important;
-    border: 1px solid #d1d1d1;
-    width: 95px;
-}
-
-.qty-btn {
-    padding-left: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 18px;
-    user-select: none;
-}
-
-.qty-value {
-    width: 39px;
-    text-align: center;
-    font-size: 14px;
-    padding-left: 10px;
-}
-
-.thumbnail-wrapper {
-    margin-top: 12px;
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
-    overflow-x: auto;
-    max-width: 100%;
-}
-
-.thumbnail-container {
-    flex-shrink: 0;
-    cursor: pointer;
-}
-
-.thumbnail-img {
-    border: 2px solid transparent;
-    transition: border-color 0.2s;
-    border-radius: 4px;
-}
-
-.thumbnail-container:hover .thumbnail-img {
-    border-color: #000;
-}
-
-.info-icons {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    font-size: 17px;
-    margin-top: 24px;
-}
-
-.info-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #000;
-}
-
-.info-item .v-icon {
-    color: #000;
-}
-
-/* Recommendations Section */
-.recommendation-container {
-    margin-top: 100px;
-    font-weight: 500;
-    margin-bottom: 100px;
-    width: 90%;
-    margin-left: 5%;
-    margin-right: 5%;
-}
-
-.recommendation-title {
-    margin-bottom: 40px;
-    text-align: center;
-    font-size: 24px;
-}
-
-.recommendation-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-    font-size: 12px;
-    gap: 18px;
-}
-
-.recommendation-card {
-    width: 100%;
-    min-width: 0;
-}
-
-.recommendation-img {
-    width: 100%;
-    aspect-ratio: 4 / 5;
-    height: auto;
-    object-fit: cover;
-}
-
-.recommendation-product-title {
-    margin-top: 8px;
-    font-size: 13px;
-}
-
-.recommendation-product-price {
-    font-size: 14px;
-    font-weight: 500;
-}
-
-/* Banner */
-.banner-container {
-    margin-bottom: 100px;
-    width: 90%;
-    margin-left: 5%;
-    margin-right: 5%;
-}
-
-.banner-img {
-    width: 100%;
-    display: block;
-}
-
-/* Desktop specific styles */
-.product-info-wrapper {
-    width: 145%;
-}
-
-.buttons-wrapper {
-    width: 145%;
-}
-
-.expansion-panels-wrapper {
-    border: 1px solid lightgray;
-}
-
-.product-title-mobile {
-    font-size: xx-large;
-    font-weight: 500;
-}
-
-.product-price-mobile {
-    margin-top: 7px;
-    font-size: 15px;
-}
-
-.discount-text {
-    font-size: 14px;
-    margin-top: 7px;
-}
-
-.features-title {
-    font-size: 17px;
-    margin-top: 27px;
-    font-weight: 500;
-}
-
-.features-list {
-    font-size: 17px;
-    margin-top: 12px;
-}
-
-/* Mobile Responsive Styles */
-@media (max-width: 959px) {
-    :deep(.v-container) {
-        max-width: 100% !important;
-    }
-
-    .product-details-page {
-        overflow-x: hidden;
-    }
-
-    .main-image-wrapper {
-        border-radius: 22px;
-        overflow: hidden;
-        box-shadow: 0 18px 38px rgba(72, 23, 12, 0.1);
-    }
-
-    .thumbnail-wrapper {
-        gap: 12px;
-        margin: 14px 0 24px;
-    }
-
-    .thumbnail-img {
-        border-radius: 12px;
-        box-shadow: 0 10px 22px rgba(72, 23, 12, 0.08);
-    }
-
-    /* Fix the width overflow issue */
-    .product-info-wrapper {
-        width: 100% !important;
-        padding: 6px 2px 0;
-    }
-
-    .buttons-wrapper {
-        width: 100% !important;
-        gap: 2px;
-    }
-
-    .thumbnail-wrapper {
-        padding-bottom: 10px;
-    }
-
-    .thumbnail-container {
-        flex-shrink: 0;
-    }
-
-    .product-title-mobile {
-        color: #34110e;
-        font-family: Georgia, "Times New Roman", serif;
-        font-size: 27px;
-        line-height: 1.18;
-    }
-
-    .product-price-mobile {
-        color: #3a1511;
-        font-size: 16px;
-        line-height: 1.4;
-    }
-
-    .quantity-label {
-        font-size: 12px;
-    }
-
-    .quantity-box {
-        width: 118px;
-        height: 40px;
-        border-color: rgba(194, 148, 78, 0.38);
-        border-radius: 999px;
-        overflow: hidden;
-    }
-
-    .qty-btn,
-    .qty-value {
-        min-width: 38px;
-        height: 40px;
-        padding-left: 0;
-    }
-
-    .discount-text {
-        color: rgba(58, 21, 17, 0.76);
-        font-size: 14px;
-        line-height: 1.5;
-    }
-
-    .features-title {
-        font-size: 19px;
-    }
-
-    .features-list {
-        font-size: 15px;
-        line-height: 1.65;
-    }
-
-    .buttons-wrapper :deep(.v-btn) {
-        min-height: 46px;
-        border-radius: 999px;
-        letter-spacing: 0.13em;
-    }
-
-    .expansion-panels-wrapper {
-        border-color: rgba(194, 148, 78, 0.28);
-        border-radius: 18px;
-        overflow: hidden;
-    }
-
-    .info-icons {
-        font-size: 12px;
-    }
-
-    .info-item span {
-        font-size: 12px;
-    }
-
-    /* Recommendations Mobile */
-    .recommendation-container {
-        width: 100%;
-        margin-left: 0;
-        margin-right: 0;
-        padding: 0 16px;
-        margin-top: 60px;
-        margin-bottom: 60px;
-    }
-
-    .recommendation-title {
-        font-size: 20px;
-        margin-bottom: 24px;
-    }
-
-    .recommendation-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 12px;
-    }
-
-    .recommendation-card {
-        width: 100%;
-        max-width: none;
-    }
-
-    .recommendation-img {
-        width: 100%;
-        height: auto;
-        aspect-ratio: 4/5;
-    }
-
-    .recommendation-product-title {
-        font-size: 11px;
-    }
-
-    .recommendation-product-price {
-        font-size: 12px;
-    }
-
-    /* Banner Mobile */
-    .banner-container {
-        margin-bottom: 60px;
-        padding: 0 16px;
-        width: 100%;
-        margin-left: 0;
-        margin-right: 0;
-    }
-
-    .banner-img {
-        width: 100%;
-        margin-left: 0;
-    }
-
-    .breadcrumb-mobile {
-        font-size: 11px !important;
-    }
-
-    .breadcrumb-mobile a {
-        font-size: 11px !important;
-    }
-}
-
-/* Tablet adjustments */
-@media (min-width: 600px) and (max-width: 959px) {
-    .product-details-page {
-        padding-top: 105px !important;
-    }
-
-    .product-main-image {
-        margin-top: 12px !important;
-    }
-
-    .recommendation-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 16px;
-    }
-
-    .recommendation-card {
-        width: 100%;
-        max-width: none;
-    }
-}
-
-@media (min-width: 769px) and (max-width: 1024px) {
-    .product-info-wrapper,
-    .buttons-wrapper {
-        width: 100%;
-    }
-
-    .recommendation-container {
-        width: calc(100% - 48px);
-        margin-left: auto;
-        margin-right: auto;
-        margin-top: 72px;
-        margin-bottom: 72px;
-    }
-
-    .recommendation-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 18px;
-    }
-
-    .banner-container {
-        width: calc(100% - 48px);
-        margin-left: auto;
-        margin-right: auto;
-    }
-}
-
-/* Extra small mobile devices */
-@media (max-width: 599px) {
-    .product-details-page {
-        padding-top: 88px !important;
-    }
-
-    .product-main-image {
-        margin-top: 8px !important;
-    }
-
-    .recommendation-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .quantity-wrapper {
-        margin-bottom: 16px;
-    }
-
-    .quantity-box {
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        width: 150px;
-        height: 44px;
-        border: 1px solid rgba(194, 148, 78, 0.52);
-        background: rgba(255, 252, 247, 0.94);
-        box-shadow: 0 10px 24px rgba(72, 23, 12, 0.08);
-    }
-
-    .qty-btn,
-    .qty-value {
-        flex: 1 1 0;
-        min-width: 0;
-        width: auto;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        line-height: 1;
-    }
-
-    .qty-btn {
-        color: #3a1511;
-        font-size: 20px;
-        font-weight: 500;
-    }
-
-    .qty-value {
-        color: #34110e;
-        font-size: 17px;
-        font-weight: 500;
-        border-left: 1px solid rgba(194, 148, 78, 0.18);
-        border-right: 1px solid rgba(194, 148, 78, 0.18);
-    }
-    
-    .info-icons {
-        margin-top: 16px;
-    }
-}
-</style>
-
-<style scoped>
-:deep(.v-expansion-panel-title) {
-    min-height: 36px !important;
-    padding: 6px 16px !important;
-}
-
-:deep(.v-expansion-panel-title__content) {
-    padding: 0 !important;
-}
-
-:deep(.v-expansion-panel-title span) {
-    line-height: 1.2;
-}
-</style>

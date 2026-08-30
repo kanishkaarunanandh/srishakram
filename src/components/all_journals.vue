@@ -21,7 +21,7 @@
       >
         <!-- IMAGE -->
         <div class="img-box">
-          <img :src="resolveMediaUrl(journal.heroImage)" />
+          <img :src="getJournalImage(journal.heroImage)" />
         </div>
 
         <!-- CONTENT -->
@@ -40,13 +40,16 @@
   </div>
 </template>
 
+<style scoped src="@/components/stylesheets/all_journals.css"></style>
 <script>
 import api from "@/adminfolder/axios"
 import { resolveMediaUrl } from "@/utils/mediaUrl"
+import { demoJournal } from "@/data/demoJournal"; 
+
 export default {
     data() {
     return {
-      journals: []
+      journals: [...demoJournal]
     }
   },
   mounted() {
@@ -54,6 +57,19 @@ export default {
   },
   methods: {
     resolveMediaUrl,
+    getJournalImage(image) {
+    if (!image) {
+      return "/no-image.png";
+    }
+
+    // Static frontend image
+    if (image.startsWith("/assets/")) {
+      return image;
+    }
+
+    // Backend image
+    return this.resolveMediaUrl(image);
+  },
     Sareejournal(id)
       {
         this.$router.push({ name: 'SareeJournal', params: { id } });
@@ -70,55 +86,4 @@ export default {
   }
 }
 </script>
-<style scoped>
-.journal-card {
-  background: #fff;
-  cursor: pointer;
-  transition: all 0.35s ease;
-}
 
-.journal-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 18px 40px rgba(0,0,0,0.12);
-}
-
-.img-box {
-  width: 100%;
-  height: 240px;
-  overflow: hidden;
-}
-
-.img-box img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.4s ease;
-}
-
-.journal-card:hover img {
-  transform: scale(1.08);
-}
-
-.card-content {
-  padding: 14px;
-}
-
-.journal-title {
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-
-.journal-desc {
-  font-size: 12px;
-  color: #555;
-  margin-bottom: 10px;
-}
-
-.read-more {
-  font-size: 11px;
-  letter-spacing: 1px;
-  color: #000;
-  
-}
-</style>

@@ -10,8 +10,12 @@
           Rooted in Kanchipuram silk tradition, Sri Shakram curates sarees with temple-inspired detail,
           refined zari work, and a quiet showroom luxury made for modern celebrations.
         </p>
+        
       </section>
-
+          <p class="creator-credit">
+  The videos and images featured in this Website belong to their respective creators.
+  All credits and rights belong to the original creators.
+</p>
       <section class="newsletter-panel">
         <span class="seal">SS</span>
         <div>
@@ -71,6 +75,7 @@
   </footer>
 </template>
 
+<style scoped src=""></style>
 <script>
 export default {
   name: "LuxuryFooter",
@@ -83,6 +88,13 @@ export default {
 </script>
 
 <style scoped>
+.creator-credit {
+  max-width: 700px;
+  font-size: 9px;
+  line-height: 1.6;
+  color: #777;
+  margin-bottom: 40px;
+}
 .luxury-footer {
   position: relative;
   overflow: hidden;

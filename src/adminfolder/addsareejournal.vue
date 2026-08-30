@@ -188,8 +188,10 @@
     </v-row>
   </v-container>
 </template>
+<style scoped src=""></style>
 <script>
 import api from "@/adminfolder/axios"
+import '@/adminfolder/admin styles/add_sareejournal.css'
 
 export default {
   data() {
@@ -393,135 +395,3 @@ export default {
   }
 }
 </script>
-<style scoped>
-.review-video {
-  width: 100%;
-  height: 160px;
-  border-radius: 14px;
-  object-fit: cover;
-  margin-bottom: 12px;
-  box-shadow: 0 8px 18px rgba(0,0,0,.15);
-  cursor: pointer;
-}
-
-.review-preview {
-  position: relative;
-}
-
-.journal-wrapper {
-  background: linear-gradient(135deg, #f7efe8, #efe3d7);
-}
-
-.editor-panel {
-  background: rgba(255,255,255,0.75);
-  backdrop-filter: blur(14px);
-  padding: 30px;
-  border-radius: 24px;
-}
-
-.editor-title {
-  font-size: 26px;
-  font-weight: 700;
-  margin-bottom: 24px;
-  color: maroon;
-}
-
-.section-title {
-  margin: 28px 0 12px;
-  font-weight: 600;
-  color: maroon;
-}
-
-.editor-block {
-  margin-bottom: 20px;
-}
-
-.preview-panel {
-  background: #fffaf5;
-  border-radius: 28px;
-  padding: 30px;
-}
-
-.hero-preview {
-  position: relative;
-  height: 360px;
-  border-radius: 22px;
-  overflow: hidden;
-}
-
-.hero-preview img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.hero-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,.65), transparent);
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 30px;
-  color: white;
-}
-
-.badge {
-  background: #c6a25d;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-size: 12px;
-  width: fit-content;
-  margin-bottom: 8px;
-}
-
-.preview-heading {
-  margin: 40px 0 18px;
-  color: maroon;
-}
-
-.heritage-row {
-  display: flex;
-  gap: 30px;
-  margin-bottom: 30px;
-  align-items: center;
-}
-
-.heritage-row.reverse {
-  flex-direction: row-reverse;
-}
-
-.heritage-row img {
-  width: 260px;
-  height: 320px;
-  object-fit: cover;
-  border-radius: 18px;
-}
-
-.zari-box {
-  display: flex;
-  gap: 30px;
-  align-items: center;
-}
-
-.zari-box img {
-  width: 260px;
-  border-radius: 14px;
-}
-
-.review-preview {
-  width: 280px;
-  background: white;
-  padding: 20px;
-  border-radius: 18px;
-  box-shadow: 0 10px 25px rgba(0,0,0,.12);
-  margin-right: 20px;
-}
-
-.review-preview img {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-</style>

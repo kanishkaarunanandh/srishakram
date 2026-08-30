@@ -243,9 +243,11 @@
   </v-container>
 </template>
 
+<style scoped src="@/components/stylesheets/order_details.css"></style>
 <script>
 import axios from "axios"
 import api from "@/adminfolder/axios"
+
 
 export default {
   data() {
@@ -310,7 +312,7 @@ export default {
       const customerId = localStorage.getItem("customerId")
       
       axios
-        .get(`https://srishakram-backend-v2.onrender.com/orders/customer/${customerId}`)
+        .get(`http://localhost:8080/orders/customer/${customerId}`)
         .then(res => {
           const foundOrder = res.data.find(o => o.orderId == orderId)
           if (foundOrder) {
@@ -495,141 +497,4 @@ export default {
 }
 </script>
 
-<style scoped>
-.order-details-container {
-  background: #fafafa;
-  min-height: 100vh;
-}
 
-.order-header {
-  background: white;
-  padding: 24px;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-.products-section {
-  background: white;
-  padding: 24px;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-.product-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 20px;
-  transition: all 0.2s ease;
-}
-
-.product-card:hover {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-
-.product-image-wrapper {
-  width: 120px;
-  height: 120px;
-  min-width: 120px;
-  margin-right: 20px;
-  border-radius: 8px;
-  overflow: hidden;
-  background: #f5f5f5;
-}
-
-.product-image {
-  width: 100%;
-  height: 100%;
-}
-
-.product-details {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.product-name {
-  color: #212121;
-  line-height: 1.5;
-}
-
-.product-meta {
-  color: #757575;
-}
-
-.product-price {
-  color: #212121;
-}
-
-.summary-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  background: white;
-}
-
-.sticky-summary {
-  position: sticky;
-  top: 24px;
-}
-
-.summary-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.total-row {
-  padding-top: 8px;
-}
-
-.payment-method {
-  border-left: 3px solid #2196F3;
-}
-
-.actions-section {
-  background: #fafafa;
-}
-
-/* Responsive */
-@media (max-width: 960px) {
-  .sticky-summary {
-    position: static;
-    margin-top: 24px;
-  }
-  
-  .product-image-wrapper {
-    width: 100px;
-    height: 100px;
-    min-width: 100px;
-    margin-right: 16px;
-  }
-}
-
-@media (max-width: 768px) {
-  .order-details-container {
-    padding: 118px 16px 28px !important;
-    overflow-x: hidden;
-  }
-
-  .order-back-button {
-    min-height: 42px;
-    padding: 0 18px !important;
-    border: 1px solid rgba(196, 151, 80, 0.5);
-    border-radius: 999px;
-    background: rgba(255, 250, 242, 0.96) !important;
-    color: #6b1114 !important;
-    box-shadow: 0 12px 28px rgba(61, 16, 13, 0.12);
-    font-size: 11px;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .order-header,
-  .products-section,
-  .summary-card {
-    border-radius: 18px;
-    box-shadow: 0 12px 32px rgba(61, 16, 13, 0.08);
-  }
-}
-</style>

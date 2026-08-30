@@ -74,8 +74,10 @@
   </v-card>
 </v-dialog> 
 </template>
+<style scoped src="@/adminfolder/admin styles/add_catelog.css"></style>
+<style scoped src=""></style>
 <script>
-import api from  '@/adminfolder/axios'
+import api from  '@/adminfolder/axios';
 export default
 {
     data()
@@ -188,28 +190,3 @@ export default
     }
 }
 </script>
-<style>
-.upload-text {
-  text-align: center;
-  color: #a07547;
-  font-weight: 600;
-}
-
-.preview-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 12px;
-}
-.upload-box {
-  border: 2px dashed #a07547;
-  border-radius: 12px;
-  width: 100%;
-  max-width: 320px;
-  height: 300px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-}
-</style>
