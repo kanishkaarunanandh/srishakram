@@ -16,9 +16,9 @@
         Continue with Google
       </button> -->
 
-      <div class="divider">
+      <!-- <div class="divider">
         <span>or</span>
-      </div>
+      </div> -->
 
       <!-- Email -->
       <input
