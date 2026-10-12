@@ -12,10 +12,10 @@
       <h2>Admin Sign In</h2>
       <p class="subtitle">Sign in as administrator</p>
 
-      <!-- Google -->
+      <!-- Google
       <button class="google-btn" @click="loginWithGoogle">
         Continue with Google
-      </button>
+      </button> -->
 
       <div class="divider">
         <span>or</span>
